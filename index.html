@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>數位行銷修課分享網</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -223,6 +224,16 @@
   </div>
 </div>
 
+<!-- ADMIN LOGIN MODAL -->
+<div id="adminLoginModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
+  <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-sm shadow-xl p-6 text-center">
+    <h2 class="font-display font-bold text-lg text-[var(--text)] mb-2">管理員登入</h2>
+    <p class="text-xs text-[var(--muted)] font-mono mb-5">請用白名單內的 Google 帳號登入</p>
+    <div id="googleSignInButton" class="flex justify-center"></div>
+    <button onclick="closeModal('adminLoginModal')" class="mt-5 text-xs font-mono text-[var(--muted)] hover:text-[var(--text)]">取消</button>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden bg-[var(--surface)] border border-[var(--mint)] text-sm px-5 py-3 rounded-lg shadow-lg font-mono text-[var(--text)]">
   ✅ 操作成功！
@@ -231,7 +242,7 @@
 <script>
 // ---------- 從 Google Sheets 讀取真實資料 ----------
 // ⚠️ 請把下面這行換成你自己部署 GAS 網頁應用程式後拿到的網址
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxLA3GGZmqqhIU08Kj98G_pO3B3jhGIZkp7G_TTbNWJtjQ7Fv84sRlkB194RPhlWJuk/exec";
+const GAS_URL = "請貼上你的 Google Apps Script 網頁應用程式網址";
 
 let courses = [];
 
@@ -267,7 +278,6 @@ let currentRating = { sweet:0, easy:0, gain:0 };
 let currentRecommend = null;
 let currentOpenCourseId = null;
 let isAdminMode = false;
-const ADMIN_PASSWORD = "admin123"; // 原型示範用，正式上線請改用後端驗證
 let isMobileView = false;
 
 // ---------- 電腦版／手機版預覽切換 ----------
@@ -458,28 +468,55 @@ function openCourseModal(id){
 }
 
 // ---------- ADMIN MODE ----------
-function toggleAdminMode(){
-  if(!isAdminMode){
-    const input = prompt("請輸入管理密碼\n（原型示範用，正式上線需改為後端帳號驗證）");
-    if(input === null) return;
-    if(input !== ADMIN_PASSWORD){
-      alert("密碼錯誤，無法進入管理模式");
-      return;
-    }
-    isAdminMode = true;
-  } else {
-    isAdminMode = false;
-  }
+// ⚠️ 請換成你在 Google Cloud Console 申請的 Client ID（要跟 GAS 裡設定的同一組）
+const GOOGLE_CLIENT_ID = "378596510854-louifc2cag698s3mt76lg8n8elgburpm.apps.googleusercontent.com";
+let currentIdToken = null;
+
+function initGoogleSignIn(){
+  if(typeof google === 'undefined') return;
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleCredentialResponse
+  });
+}
+
+function handleCredentialResponse(response){
+  currentIdToken = response.credential;
+  isAdminMode = true;
+  closeModal('adminLoginModal');
+
   const btn = document.getElementById('adminToggleBtn');
-  if(isAdminMode){
-    btn.textContent = "🔓 管理模式中（點擊退出）";
-    btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--indigo)] bg-[var(--indigo-soft)] text-[var(--indigo)] font-semibold flex items-center gap-1.5";
-  } else {
-    btn.textContent = "🔒 管理模式";
-    btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5";
-  }
+  btn.textContent = "🔓 管理模式中（點擊登出）";
+  btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--indigo)] bg-[var(--indigo-soft)] text-[var(--indigo)] font-semibold flex items-center gap-1.5";
+
+  showToast("✅ 已登入管理模式");
   if(currentOpenCourseId !== null && !document.getElementById('courseModal').classList.contains('hidden')){
     openCourseModal(currentOpenCourseId);
+  }
+}
+
+function toggleAdminMode(){
+  if(isAdminMode){
+    // 登出
+    isAdminMode = false;
+    currentIdToken = null;
+    const btn = document.getElementById('adminToggleBtn');
+    btn.textContent = "🔒 管理模式";
+    btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5";
+    showToast("已登出管理模式");
+    if(currentOpenCourseId !== null && !document.getElementById('courseModal').classList.contains('hidden')){
+      openCourseModal(currentOpenCourseId);
+    }
+    return;
+  }
+  // 登入：打開 Google 登入視窗
+  showModal('adminLoginModal');
+  const container = document.getElementById('googleSignInButton');
+  container.innerHTML = "";
+  if(typeof google !== 'undefined'){
+    google.accounts.id.renderButton(container, { theme: "outline", size: "large", text: "signin_with" });
+  } else {
+    container.innerHTML = `<p class="text-xs text-[var(--red)] font-mono">Google 登入元件載入失敗，請確認網路連線，並確認是用 https 網址開啟（非本機檔案）</p>`;
   }
 }
 
@@ -492,7 +529,7 @@ async function editReview(courseId, reviewId){
     alert("內容不可空白");
     return;
   }
-  const result = await postToSheet({ action:'editReview', reviewId: reviewId, comment: updated.trim() });
+  const result = await postToSheet({ action:'editReview', reviewId: reviewId, comment: updated.trim(), idToken: currentIdToken });
   if(result.success){
     await loadCoursesFromSheet();
     openCourseModal(courseId);
@@ -504,7 +541,7 @@ async function editReview(courseId, reviewId){
 
 async function deleteReview(courseId, reviewId){
   if(!confirm("確定要刪除這則心得嗎？此動作無法復原。")) return;
-  const result = await postToSheet({ action:'deleteReview', reviewId: reviewId });
+  const result = await postToSheet({ action:'deleteReview', reviewId: reviewId, idToken: currentIdToken });
   if(result.success){
     await loadCoursesFromSheet();
     openCourseModal(courseId);
@@ -685,7 +722,7 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
 });
 
 // click backdrop to close
-['courseModal','reviewModal','addCourseModal'].forEach(id=>{
+['courseModal','reviewModal','addCourseModal','adminLoginModal'].forEach(id=>{
   document.getElementById(id).addEventListener('click', function(e){
     if(e.target === this) closeModal(id);
   });
@@ -693,6 +730,7 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
 
 // ---------- INIT ----------
 loadCoursesFromSheet();
+window.addEventListener('load', initGoogleSignIn);
 </script>
 </body>
 </html>
