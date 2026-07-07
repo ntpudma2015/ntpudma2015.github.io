@@ -186,8 +186,9 @@
 
       <div>
         <label class="block text-xs font-mono text-[var(--muted)] mb-2">你會推薦學弟妹修這門課嗎？</label>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-3 gap-2">
           <button type="button" id="recommendYes" class="toggle-btn border border-[var(--line)] rounded-lg py-3 text-sm font-semibold text-[var(--muted)]">👍 推薦</button>
+          <button type="button" id="recommendNeutral" class="toggle-btn border border-[var(--line)] rounded-lg py-3 text-sm font-semibold text-[var(--muted)]">😐 普通</button>
           <button type="button" id="recommendNo" class="toggle-btn border border-[var(--line)] rounded-lg py-3 text-sm font-semibold text-[var(--muted)]">👎 不推薦</button>
         </div>
       </div>
@@ -357,7 +358,7 @@ function avg(reviews, key){
 }
 function recommendPercent(reviews){
   if(reviews.length === 0) return null;
-  return Math.round(reviews.filter(r=>r.recommend).length / reviews.length * 100);
+  return Math.round(reviews.filter(r=>r.recommend==='推薦').length / reviews.length * 100);
 }
 function starString(score){
   const rounded = Math.round(score);
@@ -498,7 +499,7 @@ function openCourseModal(id){
           <span style="color:var(--amber)">🍯${r.sweet}</span>
           <span style="color:var(--cyan)">🧊${r.easy}</span>
           <span style="color:var(--mint)">📈${r.gain}</span>
-          <span style="color:${r.recommend ? 'var(--mint)' : 'var(--red)'}">${r.recommend ? '👍 推薦' : '👎 不推薦'}</span>
+          <span style="color:${r.recommend==='推薦' ? 'var(--mint)' : r.recommend==='普通' ? 'var(--amber)' : 'var(--red)'}">${r.recommend==='推薦' ? '👍 推薦' : r.recommend==='普通' ? '😐 普通' : '👎 不推薦'}</span>
           <span class="ml-auto text-[var(--muted)]">${r.date}</span>
         </div>
         <p class="text-sm leading-relaxed text-[var(--text)]">${r.comment}</p>
@@ -710,12 +711,15 @@ function updateStarPicker(key){
 function setRecommend(value){
   currentRecommend = value;
   const yesBtn = document.getElementById('recommendYes');
+  const neutralBtn = document.getElementById('recommendNeutral');
   const noBtn = document.getElementById('recommendNo');
-  yesBtn.className = "toggle-btn border rounded-lg py-3 text-sm font-semibold " + (value===true ? "border-[var(--mint)] bg-[var(--mint-soft)] text-[var(--mint)]" : "border-[var(--line)] text-[var(--muted)]");
-  noBtn.className = "toggle-btn border rounded-lg py-3 text-sm font-semibold " + (value===false ? "border-[var(--red)] bg-[var(--red-soft)] text-[var(--red)]" : "border-[var(--line)] text-[var(--muted)]");
+  yesBtn.className = "toggle-btn border rounded-lg py-3 text-sm font-semibold " + (value==='推薦' ? "border-[var(--mint)] bg-[var(--mint-soft)] text-[var(--mint)]" : "border-[var(--line)] text-[var(--muted)]");
+  neutralBtn.className = "toggle-btn border rounded-lg py-3 text-sm font-semibold " + (value==='普通' ? "border-[var(--amber)] bg-[rgba(217,123,10,0.12)] text-[var(--amber)]" : "border-[var(--line)] text-[var(--muted)]");
+  noBtn.className = "toggle-btn border rounded-lg py-3 text-sm font-semibold " + (value==='不推薦' ? "border-[var(--red)] bg-[var(--red-soft)] text-[var(--red)]" : "border-[var(--line)] text-[var(--muted)]");
 }
-document.getElementById('recommendYes').addEventListener('click', ()=> setRecommend(true));
-document.getElementById('recommendNo').addEventListener('click', ()=> setRecommend(false));
+document.getElementById('recommendYes').addEventListener('click', ()=> setRecommend('推薦'));
+document.getElementById('recommendNeutral').addEventListener('click', ()=> setRecommend('普通'));
+document.getElementById('recommendNo').addEventListener('click', ()=> setRecommend('不推薦'));
 
 function openReviewModal(){
   populateCourseSelect();
