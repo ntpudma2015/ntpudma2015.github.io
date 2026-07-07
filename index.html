@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>數位行銷修課分享網</title>
+<title>國立臺北大學數位行銷修課分享網</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -75,7 +75,7 @@
   <div class="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between gap-3 flex-wrap">
     <div class="flex items-center gap-3 min-w-0">
       <div class="min-w-0">
-        <p class="font-display font-bold text-lg leading-none text-[var(--text)]">數位行銷修課分享網</p>
+        <p class="font-display font-bold text-lg leading-none text-[var(--text)]">國立臺北大學數位行銷修課分享網</p>
         <div id="headerCredit">
           <p class="text-[11px] text-[var(--muted)] mt-1 leading-snug">由 國立臺北大學數位行銷學系第十屆系學會 製作，願每位同學都能選其所愛、愛其所選。</p>
           <p class="text-[9px] text-[var(--muted)]/60 font-mono tracking-wide mt-0.5">BUILT WITH ❤ BY NTPU DM 10TH STUDENT ASSOCIATION</p>
@@ -541,7 +541,7 @@ function initGoogleSignIn(){
   });
 }
 
-function handleCredentialResponse(response){
+async function handleCredentialResponse(response){
   currentIdToken = response.credential;
 
   if(pendingLoginPurpose === 'admin'){
@@ -551,6 +551,7 @@ function handleCredentialResponse(response){
     btn.textContent = "🔓 管理模式中（點擊登出）";
     btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--indigo)] bg-[var(--indigo-soft)] text-[var(--indigo)] font-semibold flex items-center gap-1.5";
     showToast("✅ 已登入管理模式");
+    await loadCoursesFromSheet();
     if(currentOpenCourseId !== null && !document.getElementById('courseModal').classList.contains('hidden')){
       openCourseModal(currentOpenCourseId);
     }
@@ -574,9 +575,11 @@ function toggleAdminMode(){
     btn.textContent = "🔒 管理模式";
     btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5";
     showToast("已登出管理模式");
-    if(currentOpenCourseId !== null && !document.getElementById('courseModal').classList.contains('hidden')){
-      openCourseModal(currentOpenCourseId);
-    }
+    loadCoursesFromSheet().then(() => {
+      if(currentOpenCourseId !== null && !document.getElementById('courseModal').classList.contains('hidden')){
+        openCourseModal(currentOpenCourseId);
+      }
+    });
     return;
   }
   // 登入：打開 Google 登入視窗
@@ -689,7 +692,26 @@ async function deleteReview(courseId, reviewId){
 // ---------- REVIEW FORM MODAL ----------
 function populateCourseSelect(){
   const sel = document.getElementById('formCourse');
-  sel.innerHTML = courses.map(c=>`<option value="${c.id}">${c.name}（${c.teacher}）</option>`).join("");
+
+  // 依教授姓名排序，同一位教授（或同樣的合授組合）的課程會排在一起
+  const sorted = courses.slice().sort((a, b) => a.teacher.localeCompare(b.teacher, 'zh-Hant'));
+
+  // 用 <optgroup> 把同一位教授底下的課程分組，選單上會直接顯示老師名字當標題
+  const groups = {};
+  const teacherOrder = [];
+  sorted.forEach(c => {
+    if(!groups[c.teacher]){
+      groups[c.teacher] = [];
+      teacherOrder.push(c.teacher);
+    }
+    groups[c.teacher].push(c);
+  });
+
+  sel.innerHTML = teacherOrder.map(teacher => `
+    <optgroup label="${teacher} 老師">
+      ${groups[teacher].map(c => `<option value="${c.id}">${c.name}</option>`).join("")}
+    </optgroup>
+  `).join("");
 }
 
 function buildStarPicker(container, key){
