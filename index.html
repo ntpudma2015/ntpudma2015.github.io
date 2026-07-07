@@ -198,7 +198,7 @@
         <textarea id="formComment" required rows="4" placeholder="這門課的作業量、老師教學方式、上課氣氛..." class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm placeholder:text-[var(--muted)]"></textarea>
       </div>
 
-      <button type="submit" class="w-full font-display font-semibold bg-[var(--mint)] text-white py-3 rounded-lg hover:brightness-110 active:scale-95 transition">送出心得</button>
+      <button type="submit" id="reviewSubmitBtn" class="w-full font-display font-semibold bg-[var(--mint)] text-white py-3 rounded-lg hover:brightness-110 active:scale-95 transition">送出心得</button>
     </form>
   </div>
 </div>
@@ -234,7 +234,7 @@
         <label class="block text-xs font-mono text-[var(--muted)] mb-1.5">考古題連結（選填）</label>
         <input id="newCourseExam" type="text" placeholder="https://..." class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm placeholder:text-[var(--muted)]" />
       </div>
-      <button type="submit" class="w-full font-display font-semibold bg-[var(--indigo)] text-white py-3 rounded-lg hover:brightness-110 active:scale-95 transition">新增課程</button>
+      <button type="submit" id="courseSubmitBtn" class="w-full font-display font-semibold bg-[var(--indigo)] text-white py-3 rounded-lg hover:brightness-110 active:scale-95 transition">新增課程</button>
     </form>
   </div>
 </div>
@@ -734,8 +734,12 @@ function openReviewModal(){
   showModal('reviewModal');
 }
 
+let isSubmittingReview = false;
+
 document.getElementById('reviewForm').addEventListener('submit', async function(e){
   e.preventDefault();
+  if(isSubmittingReview) return; // 防止連續點擊造成重複送出
+
   const courseId = parseInt(document.getElementById('formCourse').value);
   const comment = document.getElementById('formComment').value.trim();
   if(currentRating.sweet===0 || currentRating.easy===0 || currentRating.gain===0){
@@ -746,29 +750,41 @@ document.getElementById('reviewForm').addEventListener('submit', async function(
     alert("請選擇是否推薦這門課給學弟妹！");
     return;
   }
+
+  isSubmittingReview = true;
+  const submitBtn = document.getElementById('reviewSubmitBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = "送出中...";
+
   const today = new Date();
-  const dateStr = `${today.getFullYear()}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')}`;
+  const dateStr = `${today.getFullYear()}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')} ${String(today.getHours()).padStart(2,'0')}:${String(today.getMinutes()).padStart(2,'0')}`;
 
-  const result = await postToSheet({
-    action: 'addReview',
-    courseId: courseId,
-    sweet: currentRating.sweet,
-    easy: currentRating.easy,
-    gain: currentRating.gain,
-    recommend: currentRecommend,
-    comment: comment,
-    date: dateStr
-  });
+  try {
+    const result = await postToSheet({
+      action: 'addReview',
+      courseId: courseId,
+      sweet: currentRating.sweet,
+      easy: currentRating.easy,
+      gain: currentRating.gain,
+      recommend: currentRecommend,
+      comment: comment,
+      date: dateStr
+    });
 
-  if(result.success){
-    closeModal('reviewModal');
-    await loadCoursesFromSheet();
-    showToast("✅ 心得送出成功！");
-    if(currentOpenCourseId === courseId){
-      openCourseModal(courseId);
+    if(result.success){
+      closeModal('reviewModal');
+      await loadCoursesFromSheet();
+      showToast("✅ 心得送出成功！");
+      if(currentOpenCourseId === courseId){
+        openCourseModal(courseId);
+      }
+    } else {
+      alert("送出失敗，請稍後再試：" + (result.error || ""));
     }
-  } else {
-    alert("送出失敗，請稍後再試：" + (result.error || ""));
+  } finally {
+    isSubmittingReview = false;
+    submitBtn.disabled = false;
+    submitBtn.textContent = "送出心得";
   }
 });
 
@@ -778,8 +794,12 @@ function openAddCourseModal(){
   showModal('addCourseModal');
 }
 
+let isSubmittingCourse = false;
+
 document.getElementById('addCourseForm').addEventListener('submit', async function(e){
   e.preventDefault();
+  if(isSubmittingCourse) return; // 防止連續點擊造成重複新增
+
   const type = document.getElementById('newCourseType').value;
   const name = document.getElementById('newCourseName').value.trim();
   const teacher = document.getElementById('newCourseTeacher').value.trim();
@@ -796,20 +816,31 @@ document.getElementById('addCourseForm').addEventListener('submit', async functi
     return;
   }
 
-  const result = await postToSheet({
-    action: 'addCourse',
-    type: type,
-    name: name,
-    teacher: teacher,
-    examLink: examLink
-  });
+  isSubmittingCourse = true;
+  const submitBtn = document.getElementById('courseSubmitBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = "新增中...";
 
-  if(result.success){
-    closeModal('addCourseModal');
-    await loadCoursesFromSheet();
-    showToast("✅ 課程新增成功，快來搶頭香寫心得！");
-  } else {
-    alert("新增失敗，請稍後再試：" + (result.error || ""));
+  try {
+    const result = await postToSheet({
+      action: 'addCourse',
+      type: type,
+      name: name,
+      teacher: teacher,
+      examLink: examLink
+    });
+
+    if(result.success){
+      closeModal('addCourseModal');
+      await loadCoursesFromSheet();
+      showToast("✅ 課程新增成功，快來搶頭香寫心得！");
+    } else {
+      alert("新增失敗，請稍後再試：" + (result.error || ""));
+    }
+  } finally {
+    isSubmittingCourse = false;
+    submitBtn.disabled = false;
+    submitBtn.textContent = "新增課程";
   }
 });
 
