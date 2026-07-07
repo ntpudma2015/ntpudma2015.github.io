@@ -61,6 +61,8 @@
   .admin-btn{ transition:all .15s ease; }
   .review-action{ transition:all .12s ease; }
   .review-action:hover{ transform:scale(1.1); }
+  .dropdown-menu{ animation:fadeIn .15s ease both; }
+  .menu-item{ transition:background-color .12s ease; }
   @media (max-width: 640px){
     #headerCredit{ display:none !important; }
   }
@@ -83,24 +85,28 @@
       </div>
     </div>
     <div class="flex items-center gap-2">
-      <button onclick="openFeedbackModal()" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--cyan)] hover:text-[var(--cyan)] flex items-center gap-1.5">
-        💬 意見回饋
-      </button>
-      <button onclick="openChangelogModal()" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5">
-        🗂️ 更新紀錄
-      </button>
-      <button id="viewToggleBtn" onclick="toggleViewMode()" title="切換電腦版／手機版預覽" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)] flex items-center gap-1.5">
-        📱 手機預覽
-      </button>
-      <button id="feedbackInboxBtn" onclick="openFeedbackInboxModal()" class="hidden admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--cyan)] hover:text-[var(--cyan)] flex items-center gap-1.5">
-        📮 意見信箱
-      </button>
-      <button id="reportedReviewsBtn" onclick="openReportedReviewsModal()" class="hidden admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--red)] hover:text-[var(--red)] flex items-center gap-1.5">
-        🚩 檢舉列表
-      </button>
-      <button id="latestReviewsBtn" onclick="openLatestReviewsModal()" class="hidden admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)] flex items-center gap-1.5">
-        🆕 最新心得
-      </button>
+      <div class="relative dropdown-wrapper">
+        <button onclick="toggleDropdown('moreMenu')" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5">
+          ⋯ 更多
+        </button>
+        <div id="moreMenu" class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-[var(--surface)] border border-[var(--line)] rounded-xl shadow-lg py-1.5 z-40">
+          <button onclick="openFeedbackModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">💬 意見回饋</button>
+          <button onclick="openChangelogModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🗂️ 更新紀錄</button>
+          <button id="viewToggleBtn" onclick="toggleViewMode()" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">📱 手機預覽</button>
+        </div>
+      </div>
+
+      <div class="relative dropdown-wrapper">
+        <button id="adminToolsBtn" onclick="toggleDropdown('adminToolsMenu')" class="hidden admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--red)] hover:text-[var(--red)] flex items-center gap-1.5">
+          🛠️ 管理工具
+        </button>
+        <div id="adminToolsMenu" class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-[var(--surface)] border border-[var(--line)] rounded-xl shadow-lg py-1.5 z-40">
+          <button onclick="openLatestReviewsModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🆕 最新心得</button>
+          <button onclick="openReportedReviewsModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🚩 檢舉列表</button>
+          <button onclick="openFeedbackInboxModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">📮 意見信箱</button>
+        </div>
+      </div>
+
       <button id="adminToggleBtn" onclick="toggleAdminMode()" title="原型示範用，正式上線需改為後端驗證" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5">
         🔒 管理模式
       </button>
@@ -126,7 +132,7 @@
       class="w-full bg-[var(--surface)] border border-[var(--line)] rounded-xl pl-11 pr-4 py-3.5 text-sm placeholder:text-[var(--muted)] shadow-sm" />
   </div>
 
-  <div class="flex gap-2" id="filterTabs">
+  <div class="flex gap-2 flex-wrap" id="filterTabs">
     <button data-filter="全部" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--mint)] bg-[var(--mint)] text-white font-semibold">全部</button>
     <button data-filter="必修" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)]">必修</button>
     <button data-filter="選修" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)]">選修</button>
@@ -145,15 +151,15 @@
 <!-- COURSE DETAIL MODAL -->
 <div id="courseModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
   <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col shadow-xl">
-    <div class="p-5 border-b border-[var(--line)] flex items-start justify-between gap-4">
-      <div>
+    <div class="p-5 border-b border-[var(--line)] flex items-start justify-between gap-4 flex-wrap">
+      <div class="min-w-0">
         <span id="modalBadge" class="text-[10px] font-mono px-2 py-1 rounded-full"></span>
         <select id="modalTypeSelect" class="hidden text-[10px] font-mono px-2 py-1 rounded-full border border-[var(--indigo)] bg-[var(--indigo-soft)] text-[var(--indigo)]">
           <option value="必修">必修</option>
           <option value="選修">選修</option>
           <option value="通識">通識</option>
         </select>
-        <div class="flex items-center gap-1.5 mt-2">
+        <div class="flex items-center gap-1.5 mt-2 flex-wrap">
           <h2 id="modalTitle" class="font-display font-bold text-xl text-[var(--text)]"></h2>
           <button id="editCourseNameBtn" class="hidden review-action text-xs text-[var(--indigo)]" title="編輯課程名稱">✏️</button>
         </div>
@@ -164,7 +170,7 @@
       </div>
       <div class="flex items-center gap-3 shrink-0">
         <div id="modalRecommendRing" class="recommend-ring w-20 h-20"></div>
-        <button id="deleteCourseBtn" class="hidden review-action text-xs font-mono text-[var(--red)] border border-[var(--red)] rounded-lg px-2 py-1.5" title="刪除整門課程">🗑️ 刪除課程</button>
+        <button id="deleteCourseBtn" class="hidden review-action text-xs font-mono text-[var(--red)] border border-[var(--red)] rounded-lg px-2 py-1.5" title="刪除整門課程">🗑️<span class="hidden sm:inline"> 刪除課程</span></button>
         <button onclick="closeModal('courseModal')" class="text-[var(--muted)] hover:text-[var(--text)] text-2xl leading-none">&times;</button>
       </div>
     </div>
@@ -365,6 +371,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxLA3GGZmqqhIU08Kj98G_p
 // ---------- 更新紀錄 ----------
 // 每次新增/調整功能時會自動在最上面補一筆，最新的版本永遠排在最前面
 const changelogEntries = [
+  { version: "v2.4", items: [
+    "整體版面優化：頁首按鈕從最多 9 顆整併為「⋯ 更多」「🛠️ 管理工具」兩個下拉選單，手機與電腦版都更清爽",
+    "修正課程詳情視窗在手機窄螢幕上標題與按鈕擠壓的排版問題"
+  ]},
   { version: "v2.3", items: [
     "管理員可在課程詳情視窗直接用下拉選單調整必選修別（必修/選修/通識），一般同學無法自行修改"
   ]},
@@ -449,6 +459,20 @@ async function getVisitorIp(){
   }
 }
 
+// ---------- 下拉選單控制 ----------
+function toggleDropdown(id){
+  const menu = document.getElementById(id);
+  const isOpen = !menu.classList.contains('hidden');
+  closeAllDropdowns();
+  if(!isOpen) menu.classList.remove('hidden');
+}
+function closeAllDropdowns(){
+  document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
+}
+document.addEventListener('click', function(e){
+  if(!e.target.closest('.dropdown-wrapper')) closeAllDropdowns();
+});
+
 let courses = [];
 let feedbackList = [];
 
@@ -525,8 +549,7 @@ function toggleViewMode(){
     heroTitle.style.fontSize = '1.5rem';
     // 手機版空間有限，先隱藏頁首的製作單位副標題，避免長句子擠壓跑版
     if(credit) credit.style.display = 'none';
-    btn.textContent = "💻 電腦版預覽";
-    btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--mint)] bg-[var(--mint-soft)] text-[var(--mint)] font-semibold flex items-center gap-1.5";
+    btn.textContent = "💻 切換回電腦版";
   } else {
     wrapper.style.maxWidth = '100%';
     wrapper.style.border = 'none';
@@ -538,7 +561,6 @@ function toggleViewMode(){
     heroTitle.style.fontSize = '';
     if(credit) credit.style.display = '';
     btn.textContent = "📱 手機預覽";
-    btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)] flex items-center gap-1.5";
   }
 }
 
@@ -727,7 +749,7 @@ function openCourseModal(id){
         <div class="mt-2 text-[10px] font-mono text-[var(--red)]">
           🚩 已被檢舉 ${r.reports.length} 次${r.reports.some(rep=>rep.reason) ? '：' + r.reports.filter(rep=>rep.reason).map(rep=>rep.reason).join('；') : ''}
         </div>` : ``}
-        <div class="flex items-center gap-3 mt-3 pt-3 border-t border-[var(--line)]">
+        <div class="flex items-center flex-wrap gap-3 mt-3 pt-3 border-t border-[var(--line)]">
           <button onclick="likeReview(${r.reviewId})" class="review-action text-xs font-mono text-[var(--muted)] hover:text-[var(--red)] flex items-center gap-1">
             ❤️ <span>${r.likes || 0}</span>
           </button>
@@ -763,21 +785,16 @@ function initGoogleSignIn(){
 
 function updateAdminButtonUI(){
   const btn = document.getElementById('adminToggleBtn');
-  const latestBtn = document.getElementById('latestReviewsBtn');
-  const reportedBtn = document.getElementById('reportedReviewsBtn');
-  const feedbackInboxBtn = document.getElementById('feedbackInboxBtn');
+  const adminToolsBtn = document.getElementById('adminToolsBtn');
   if(isAdminMode){
     btn.textContent = "🔓 管理模式中（點擊登出）";
     btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--indigo)] bg-[var(--indigo-soft)] text-[var(--indigo)] font-semibold flex items-center gap-1.5";
-    if(latestBtn) latestBtn.classList.remove('hidden');
-    if(reportedBtn) reportedBtn.classList.remove('hidden');
-    if(feedbackInboxBtn) feedbackInboxBtn.classList.remove('hidden');
+    if(adminToolsBtn) adminToolsBtn.classList.remove('hidden');
   } else {
     btn.textContent = "🔒 管理模式";
     btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5";
-    if(latestBtn) latestBtn.classList.add('hidden');
-    if(reportedBtn) reportedBtn.classList.add('hidden');
-    if(feedbackInboxBtn) feedbackInboxBtn.classList.add('hidden');
+    if(adminToolsBtn) adminToolsBtn.classList.add('hidden');
+    closeAllDropdowns();
   }
 }
 
@@ -900,7 +917,7 @@ function renderFeedbackInbox(){
         <span class="text-[10px] font-mono text-[var(--muted)]">${fb.date}</span>
       </div>
       <p class="text-sm leading-relaxed text-[var(--text)] mb-3">${fb.content}</p>
-      <div class="flex items-center gap-3 pt-3 border-t border-[var(--line)]">
+      <div class="flex items-center flex-wrap gap-3 pt-3 border-t border-[var(--line)]">
         <button onclick="deleteFeedback(${fb.feedbackId})" class="review-action text-xs font-mono text-[var(--red)]">🗑️ 刪除</button>
       </div>
     </div>
@@ -1019,7 +1036,7 @@ function renderReportedReviews(){
           <p class="text-[10px] font-mono text-[var(--muted)]">・${rep.date}：${rep.reason ? rep.reason : '（未填寫原因）'}</p>
         `).join('')}
       </div>
-      <div class="flex items-center gap-3 pt-3 border-t border-[var(--line)]">
+      <div class="flex items-center flex-wrap gap-3 pt-3 border-t border-[var(--line)]">
         <button onclick="editReview(${courseId}, ${r.reviewId})" class="review-action text-xs font-mono text-[var(--indigo)]">✏️ 編輯</button>
         <button onclick="deleteReview(${courseId}, ${r.reviewId})" class="review-action text-xs font-mono text-[var(--red)]">🗑️ 刪除</button>
       </div>
@@ -1061,7 +1078,7 @@ function renderLatestReviews(){
         <span style="color:${r.recommend==='推薦' ? 'var(--mint)' : r.recommend==='普通' ? 'var(--amber)' : 'var(--red)'}">${r.recommend==='推薦' ? '👍 推薦' : r.recommend==='普通' ? '😐 普通' : '👎 不推薦'}</span>
       </div>
       <p class="text-sm leading-relaxed text-[var(--text)]">${r.comment}</p>
-      <div class="flex items-center gap-3 mt-3 pt-3 border-t border-[var(--line)]">
+      <div class="flex items-center flex-wrap gap-3 mt-3 pt-3 border-t border-[var(--line)]">
         <button onclick="editReview(${courseId}, ${r.reviewId})" class="review-action text-xs font-mono text-[var(--indigo)]">✏️ 編輯</button>
         <button onclick="deleteReview(${courseId}, ${r.reviewId})" class="review-action text-xs font-mono text-[var(--red)]">🗑️ 刪除</button>
       </div>
