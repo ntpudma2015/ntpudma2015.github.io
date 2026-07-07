@@ -83,11 +83,17 @@
       </div>
     </div>
     <div class="flex items-center gap-2">
+      <button onclick="openFeedbackModal()" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--cyan)] hover:text-[var(--cyan)] flex items-center gap-1.5">
+        💬 意見回饋
+      </button>
       <button onclick="openChangelogModal()" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5">
         🗂️ 更新紀錄
       </button>
       <button id="viewToggleBtn" onclick="toggleViewMode()" title="切換電腦版／手機版預覽" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)] flex items-center gap-1.5">
         📱 手機預覽
+      </button>
+      <button id="feedbackInboxBtn" onclick="openFeedbackInboxModal()" class="hidden admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--cyan)] hover:text-[var(--cyan)] flex items-center gap-1.5">
+        📮 意見信箱
       </button>
       <button id="reportedReviewsBtn" onclick="openReportedReviewsModal()" class="hidden admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--red)] hover:text-[var(--red)] flex items-center gap-1.5">
         🚩 檢舉列表
@@ -213,6 +219,45 @@
   </div>
 </div>
 
+<!-- FEEDBACK FORM MODAL (公開，任何人都能用) -->
+<div id="feedbackModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
+  <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-md shadow-xl">
+    <div class="p-5 border-b border-[var(--line)] flex items-center justify-between">
+      <div>
+        <h2 class="font-display font-bold text-lg text-[var(--text)]">意見回饋</h2>
+        <p class="text-xs text-[var(--muted)] font-mono mt-0.5">網站哪裡怪怪的？想要什麼新功能？都可以說</p>
+      </div>
+      <button onclick="closeModal('feedbackModal')" class="text-[var(--muted)] hover:text-[var(--text)] text-2xl leading-none">&times;</button>
+    </div>
+    <form id="feedbackForm" class="p-5 space-y-4">
+      <div>
+        <label class="block text-xs font-mono text-[var(--muted)] mb-1.5">類型</label>
+        <select id="feedbackType" required class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm">
+          <option value="錯誤回報">🐛 錯誤回報（BUG）</option>
+          <option value="功能建議">💡 功能建議</option>
+          <option value="其他">💬 其他</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-mono text-[var(--muted)] mb-1.5">內容</label>
+        <textarea id="feedbackContent" required rows="4" placeholder="請盡量描述清楚，例如：在哪個頁面、做了什麼操作、發生了什麼狀況" class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm placeholder:text-[var(--muted)]"></textarea>
+      </div>
+      <button type="submit" id="feedbackSubmitBtn" class="w-full font-display font-semibold bg-[var(--cyan)] text-white py-3 rounded-lg hover:brightness-110 active:scale-95 transition">送出意見</button>
+    </form>
+  </div>
+</div>
+
+<!-- FEEDBACK INBOX MODAL (管理員專用) -->
+<div id="feedbackInboxModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
+  <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col shadow-xl">
+    <div class="p-5 border-b border-[var(--line)] flex items-center justify-between">
+      <h2 class="font-display font-bold text-lg text-[var(--text)]">📮 意見信箱</h2>
+      <button onclick="closeModal('feedbackInboxModal')" class="text-[var(--muted)] hover:text-[var(--text)] text-2xl leading-none">&times;</button>
+    </div>
+    <div id="feedbackInboxList" class="p-5 overflow-y-auto scrollbar-thin flex-1 space-y-3"></div>
+  </div>
+</div>
+
 <!-- REPORTED REVIEWS MODAL (管理員專用) -->
 <div id="reportedReviewsModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
   <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col shadow-xl">
@@ -315,6 +360,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxLA3GGZmqqhIU08Kj98G_p
 // ---------- 更新紀錄 ----------
 // 每次新增/調整功能時會自動在最上面補一筆，最新的版本永遠排在最前面
 const changelogEntries = [
+  { version: "v2.2", items: [
+    "新增「意見回饋」功能，同學可匿名回報 BUG 或提出功能建議，管理員登入後可在「意見信箱」查看與清除"
+  ]},
   { version: "v2.1", items: [
     "新增心得檢舉功能，同學可匿名標記不當心得，管理員登入後可在「檢舉列表」統一查看並處理"
   ]},
@@ -397,6 +445,7 @@ async function getVisitorIp(){
 }
 
 let courses = [];
+let feedbackList = [];
 
 async function loadCoursesFromSheet(){
   try {
@@ -416,6 +465,7 @@ async function loadCoursesFromSheet(){
     }
     if(data.success){
       courses = data.courses;
+      feedbackList = data.feedbackList || [];
       // 管理員身分完全以後端這次回傳的結果為準，前端不再自行假設
       if(currentIdToken){
         isAdminMode = !!data.isAdmin;
@@ -703,16 +753,19 @@ function updateAdminButtonUI(){
   const btn = document.getElementById('adminToggleBtn');
   const latestBtn = document.getElementById('latestReviewsBtn');
   const reportedBtn = document.getElementById('reportedReviewsBtn');
+  const feedbackInboxBtn = document.getElementById('feedbackInboxBtn');
   if(isAdminMode){
     btn.textContent = "🔓 管理模式中（點擊登出）";
     btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--indigo)] bg-[var(--indigo-soft)] text-[var(--indigo)] font-semibold flex items-center gap-1.5";
     if(latestBtn) latestBtn.classList.remove('hidden');
     if(reportedBtn) reportedBtn.classList.remove('hidden');
+    if(feedbackInboxBtn) feedbackInboxBtn.classList.remove('hidden');
   } else {
     btn.textContent = "🔒 管理模式";
     btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5";
     if(latestBtn) latestBtn.classList.add('hidden');
     if(reportedBtn) reportedBtn.classList.add('hidden');
+    if(feedbackInboxBtn) feedbackInboxBtn.classList.add('hidden');
   }
 }
 
@@ -766,6 +819,91 @@ function toggleAdminMode(){
     google.accounts.id.renderButton(container, { theme: "outline", size: "large", text: "signin_with" });
   } else {
     container.innerHTML = `<p class="text-xs text-[var(--red)] font-mono">Google 登入元件載入失敗，請確認網路連線，並確認是用 https 網址開啟（非本機檔案）</p>`;
+  }
+}
+
+function openFeedbackModal(){
+  document.getElementById('feedbackForm').reset();
+  showModal('feedbackModal');
+}
+
+let isSubmittingFeedback = false;
+
+document.getElementById('feedbackForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  if(isSubmittingFeedback) return;
+
+  const type = document.getElementById('feedbackType').value;
+  const content = document.getElementById('feedbackContent').value.trim();
+  if(content === ""){
+    alert("請填寫意見內容喔！");
+    return;
+  }
+
+  isSubmittingFeedback = true;
+  const submitBtn = document.getElementById('feedbackSubmitBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = "送出中...";
+
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')} ${String(today.getHours()).padStart(2,'0')}:${String(today.getMinutes()).padStart(2,'0')}`;
+
+  try {
+    const result = await postToSheet({
+      action: 'addFeedback',
+      type: type,
+      content: content,
+      date: dateStr
+    });
+    if(result.success){
+      closeModal('feedbackModal');
+      showToast("💬 感謝你的意見，我們會盡快處理！");
+    } else {
+      alert("送出失敗，請稍後再試：" + (result.error || ""));
+    }
+  } finally {
+    isSubmittingFeedback = false;
+    submitBtn.disabled = false;
+    submitBtn.textContent = "送出意見";
+  }
+});
+
+function openFeedbackInboxModal(){
+  renderFeedbackInbox();
+  showModal('feedbackInboxModal');
+}
+
+function renderFeedbackInbox(){
+  const listEl = document.getElementById('feedbackInboxList');
+  const sorted = feedbackList.slice().sort((a, b) => b.feedbackId - a.feedbackId);
+  if(sorted.length === 0){
+    listEl.innerHTML = `<p class="text-center text-sm font-mono text-[var(--muted)] py-8">目前沒有任何意見回饋</p>`;
+    return;
+  }
+  const typeIcon = { "錯誤回報": "🐛", "功能建議": "💡", "其他": "💬" };
+  listEl.innerHTML = sorted.map(fb => `
+    <div class="bg-[var(--surface-2)] border border-[var(--line)] rounded-lg p-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-mono text-[var(--cyan)]">${typeIcon[fb.type] || '💬'} ${fb.type}</span>
+        <span class="text-[10px] font-mono text-[var(--muted)]">${fb.date}</span>
+      </div>
+      <p class="text-sm leading-relaxed text-[var(--text)] mb-3">${fb.content}</p>
+      <div class="flex items-center gap-3 pt-3 border-t border-[var(--line)]">
+        <button onclick="deleteFeedback(${fb.feedbackId})" class="review-action text-xs font-mono text-[var(--red)]">🗑️ 刪除</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+async function deleteFeedback(feedbackId){
+  if(!confirm("確定要刪除這則意見回饋嗎？此動作無法復原。")) return;
+  const result = await postToSheet({ action:'deleteFeedback', feedbackId: feedbackId, idToken: currentIdToken });
+  if(result.success){
+    await loadCoursesFromSheet();
+    renderFeedbackInbox();
+    showToast("🗑️ 意見回饋已刪除");
+  } else {
+    alert("刪除失敗，請稍後再試：" + (result.error || ""));
   }
 }
 
@@ -1217,7 +1355,7 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
 });
 
 // click backdrop to close
-['courseModal','reviewModal','addCourseModal','adminLoginModal','likeLoginModal','changelogModal','latestReviewsModal','reportedReviewsModal'].forEach(id=>{
+['courseModal','reviewModal','addCourseModal','adminLoginModal','likeLoginModal','changelogModal','latestReviewsModal','reportedReviewsModal','feedbackModal','feedbackInboxModal'].forEach(id=>{
   document.getElementById(id).addEventListener('click', function(e){
     if(e.target === this) closeModal(id);
   });
