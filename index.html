@@ -148,6 +148,11 @@
     <div class="p-5 border-b border-[var(--line)] flex items-start justify-between gap-4">
       <div>
         <span id="modalBadge" class="text-[10px] font-mono px-2 py-1 rounded-full"></span>
+        <select id="modalTypeSelect" class="hidden text-[10px] font-mono px-2 py-1 rounded-full border border-[var(--indigo)] bg-[var(--indigo-soft)] text-[var(--indigo)]">
+          <option value="必修">必修</option>
+          <option value="選修">選修</option>
+          <option value="通識">通識</option>
+        </select>
         <div class="flex items-center gap-1.5 mt-2">
           <h2 id="modalTitle" class="font-display font-bold text-xl text-[var(--text)]"></h2>
           <button id="editCourseNameBtn" class="hidden review-action text-xs text-[var(--indigo)]" title="編輯課程名稱">✏️</button>
@@ -360,6 +365,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxLA3GGZmqqhIU08Kj98G_p
 // ---------- 更新紀錄 ----------
 // 每次新增/調整功能時會自動在最上面補一筆，最新的版本永遠排在最前面
 const changelogEntries = [
+  { version: "v2.3", items: [
+    "管理員可在課程詳情視窗直接用下拉選單調整必選修別（必修/選修/通識），一般同學無法自行修改"
+  ]},
   { version: "v2.2", items: [
     "新增「意見回饋」功能，同學可匿名回報 BUG 或提出功能建議，管理員登入後可在「意見信箱」查看與清除"
   ]},
@@ -658,8 +666,15 @@ function openCourseModal(id){
   const sweet = avg(c.reviews,'sweet'), easy = avg(c.reviews,'easy'), gain = avg(c.reviews,'gain');
   const pct = recommendPercent(c.reviews);
 
-  document.getElementById('modalBadge').className = "text-[10px] font-mono px-2 py-1 rounded-full " + (c.type==="必修"?"badge-required":c.type==="選修"?"badge-elective":"badge-general");
-  document.getElementById('modalBadge').textContent = c.type;
+  const typeBadge = document.getElementById('modalBadge');
+  const typeSelect = document.getElementById('modalTypeSelect');
+  typeBadge.className = "text-[10px] font-mono px-2 py-1 rounded-full " + (c.type==="必修"?"badge-required":c.type==="選修"?"badge-elective":"badge-general");
+  typeBadge.textContent = c.type;
+  typeBadge.classList.toggle('hidden', isAdminMode);
+  typeSelect.classList.toggle('hidden', !isAdminMode);
+  typeSelect.value = c.type;
+  typeSelect.onchange = () => changeCourseType(c.id, typeSelect.value);
+
   document.getElementById('modalTitle').textContent = c.name;
   document.getElementById('modalTeacher').textContent = c.teacher + " 老師";
   document.getElementById('modalRecommendRing').innerHTML = ringHTML(pct, 80, 20);
@@ -1057,6 +1072,20 @@ function renderLatestReviews(){
 function openLatestReviewsModal(){
   renderLatestReviews();
   showModal('latestReviewsModal');
+}
+
+async function changeCourseType(courseId, newType){
+  const result = await postToSheet({ action:'editCourse', courseId: courseId, type: newType, idToken: currentIdToken });
+  if(result.success){
+    await loadCoursesFromSheet();
+    refreshOpenAdminViews(courseId);
+    showToast("✅ 必選修別已更新");
+  } else {
+    alert("更新失敗，請稍後再試：" + (result.error || ""));
+    // 更新失敗就把畫面上的選單重新整理回原本的值，避免顯示跟實際資料不一致
+    await loadCoursesFromSheet();
+    openCourseModal(courseId);
+  }
 }
 
 async function editCourseField(courseId, field, currentValue){
