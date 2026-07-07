@@ -89,6 +89,9 @@
       <button id="viewToggleBtn" onclick="toggleViewMode()" title="切換電腦版／手機版預覽" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)] flex items-center gap-1.5">
         📱 手機預覽
       </button>
+      <button id="latestReviewsBtn" onclick="openLatestReviewsModal()" class="hidden admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)] flex items-center gap-1.5">
+        🆕 最新心得
+      </button>
       <button id="adminToggleBtn" onclick="toggleAdminMode()" title="原型示範用，正式上線需改為後端驗證" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5">
         🔒 管理模式
       </button>
@@ -204,6 +207,17 @@
 
       <button type="submit" id="reviewSubmitBtn" class="w-full font-display font-semibold bg-[var(--mint)] text-white py-3 rounded-lg hover:brightness-110 active:scale-95 transition">送出心得</button>
     </form>
+  </div>
+</div>
+
+<!-- LATEST REVIEWS MODAL (管理員專用) -->
+<div id="latestReviewsModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
+  <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col shadow-xl">
+    <div class="p-5 border-b border-[var(--line)] flex items-center justify-between">
+      <h2 class="font-display font-bold text-lg text-[var(--text)]">🆕 最新心得（最近 20 則）</h2>
+      <button onclick="closeModal('latestReviewsModal')" class="text-[var(--muted)] hover:text-[var(--text)] text-2xl leading-none">&times;</button>
+    </div>
+    <div id="latestReviewsList" class="p-5 overflow-y-auto scrollbar-thin flex-1 space-y-3"></div>
   </div>
 </div>
 
@@ -663,12 +677,15 @@ function initGoogleSignIn(){
 
 function updateAdminButtonUI(){
   const btn = document.getElementById('adminToggleBtn');
+  const latestBtn = document.getElementById('latestReviewsBtn');
   if(isAdminMode){
     btn.textContent = "🔓 管理模式中（點擊登出）";
     btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--indigo)] bg-[var(--indigo-soft)] text-[var(--indigo)] font-semibold flex items-center gap-1.5";
+    if(latestBtn) latestBtn.classList.remove('hidden');
   } else {
     btn.textContent = "🔒 管理模式";
     btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5";
+    if(latestBtn) latestBtn.classList.add('hidden');
   }
 }
 
@@ -768,6 +785,48 @@ async function deleteCourse(courseId, courseName){
   }
 }
 
+function renderLatestReviews(){
+  const flat = [];
+  courses.forEach(c => {
+    c.reviews.forEach(r => {
+      flat.push({ courseId: c.id, courseName: c.name, review: r });
+    });
+  });
+  // reviewId 是建立當下的時間戳記，數字越大代表越新
+  flat.sort((a, b) => b.review.reviewId - a.review.reviewId);
+  const top20 = flat.slice(0, 20);
+
+  const listEl = document.getElementById('latestReviewsList');
+  if(top20.length === 0){
+    listEl.innerHTML = `<p class="text-center text-sm font-mono text-[var(--muted)] py-8">目前還沒有任何心得</p>`;
+    return;
+  }
+  listEl.innerHTML = top20.map(({courseId, courseName, review: r}) => `
+    <div class="bg-[var(--surface-2)] border border-[var(--line)] rounded-lg p-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-display font-semibold text-[var(--indigo)]">${courseName}</span>
+        <span class="text-[10px] font-mono text-[var(--muted)]">${r.date}</span>
+      </div>
+      <div class="flex gap-3 text-[10px] font-mono mb-2 items-center">
+        <span style="color:var(--amber)">🍯${r.sweet}</span>
+        <span style="color:var(--cyan)">🧊${r.easy}</span>
+        <span style="color:var(--mint)">📈${r.gain}</span>
+        <span style="color:${r.recommend==='推薦' ? 'var(--mint)' : r.recommend==='普通' ? 'var(--amber)' : 'var(--red)'}">${r.recommend==='推薦' ? '👍 推薦' : r.recommend==='普通' ? '😐 普通' : '👎 不推薦'}</span>
+      </div>
+      <p class="text-sm leading-relaxed text-[var(--text)]">${r.comment}</p>
+      <div class="flex items-center gap-3 mt-3 pt-3 border-t border-[var(--line)]">
+        <button onclick="editReview(${courseId}, ${r.reviewId})" class="review-action text-xs font-mono text-[var(--indigo)]">✏️ 編輯</button>
+        <button onclick="deleteReview(${courseId}, ${r.reviewId})" class="review-action text-xs font-mono text-[var(--red)]">🗑️ 刪除</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function openLatestReviewsModal(){
+  renderLatestReviews();
+  showModal('latestReviewsModal');
+}
+
 async function editCourseField(courseId, field, currentValue){
   const label = field === 'name' ? '課程名稱' : '授課教師';
   const updated = prompt(`編輯${label}：`, currentValue);
@@ -800,7 +859,7 @@ async function editReview(courseId, reviewId){
   const result = await postToSheet({ action:'editReview', reviewId: reviewId, comment: updated.trim(), idToken: currentIdToken });
   if(result.success){
     await loadCoursesFromSheet();
-    openCourseModal(courseId);
+    refreshOpenAdminViews(courseId);
     showToast("✅ 心得已更新");
   } else {
     alert("更新失敗，請稍後再試：" + (result.error || ""));
@@ -812,10 +871,22 @@ async function deleteReview(courseId, reviewId){
   const result = await postToSheet({ action:'deleteReview', reviewId: reviewId, idToken: currentIdToken });
   if(result.success){
     await loadCoursesFromSheet();
-    openCourseModal(courseId);
+    refreshOpenAdminViews(courseId);
     showToast("🗑️ 心得已刪除");
   } else {
     alert("刪除失敗，請稍後再試：" + (result.error || ""));
+  }
+}
+
+// 編輯／刪除心得後，依照目前開著的是哪個視窗（課程詳情 or 最新心得列表）決定要刷新哪一個
+function refreshOpenAdminViews(courseId){
+  const latestModal = document.getElementById('latestReviewsModal');
+  if(latestModal && !latestModal.classList.contains('hidden')){
+    renderLatestReviews();
+  }
+  const courseModal = document.getElementById('courseModal');
+  if(courseModal && !courseModal.classList.contains('hidden') && currentOpenCourseId === courseId){
+    openCourseModal(courseId);
   }
 }
 
@@ -1045,7 +1116,7 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
 });
 
 // click backdrop to close
-['courseModal','reviewModal','addCourseModal','adminLoginModal','likeLoginModal','changelogModal'].forEach(id=>{
+['courseModal','reviewModal','addCourseModal','adminLoginModal','likeLoginModal','changelogModal','latestReviewsModal'].forEach(id=>{
   document.getElementById(id).addEventListener('click', function(e){
     if(e.target === this) closeModal(id);
   });
