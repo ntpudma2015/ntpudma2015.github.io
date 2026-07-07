@@ -249,16 +249,24 @@ let courses = [];
 async function loadCoursesFromSheet(){
   try {
     const res = await fetch(GAS_URL);
-    const data = await res.json();
+    const rawText = await res.text();
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch(parseErr){
+      console.error("GAS 回傳的不是合法 JSON，原始內容：", rawText);
+      alert("後端回傳的內容不是 JSON，可能是 GAS 執行時發生錯誤。詳細內容已印在瀏覽器主控台（按 F12 查看 Console）");
+      return;
+    }
     if(data.success){
       courses = data.courses;
       renderCourses();
     } else {
-      alert("讀取課程資料失敗，請確認 GAS 網址是否正確");
+      alert("讀取課程資料失敗：" + (data.error || "未知錯誤"));
     }
   } catch(err){
     console.error(err);
-    alert("無法連線到 Google Sheets 後端，請檢查網路連線或 GAS_URL 是否設定正確");
+    alert("無法連線到 GAS_URL，請確認網址是否正確、網路是否正常。詳細錯誤已印在瀏覽器主控台（按 F12 查看 Console）");
   }
 }
 
