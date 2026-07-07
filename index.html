@@ -49,6 +49,7 @@
   ::selection{ background:rgba(14,166,120,0.25); }
   .badge-required{ background:var(--indigo-soft); color:var(--indigo); border:1px solid rgba(79,70,229,0.25); }
   .badge-elective{ background:var(--mint-soft); color:var(--mint); border:1px solid rgba(14,166,120,0.3); }
+  .badge-general{ background:rgba(217,123,10,0.12); color:var(--amber); border:1px solid rgba(217,123,10,0.3); }
   .fade-in{ animation:fadeIn .22s ease both; }
   @keyframes fadeIn{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
   .pulse-dot{ animation:pulse 1.6s ease-in-out infinite; }
@@ -113,6 +114,7 @@
     <button data-filter="全部" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--mint)] bg-[var(--mint)] text-white font-semibold">全部</button>
     <button data-filter="必修" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)]">必修</button>
     <button data-filter="選修" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)]">選修</button>
+    <button data-filter="通識" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--amber)] hover:text-[var(--amber)]">通識</button>
   </div>
 </section>
 
@@ -209,6 +211,7 @@
         <select id="newCourseType" required class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm">
           <option value="必修">必修</option>
           <option value="選修">選修</option>
+          <option value="通識">通識</option>
         </select>
       </div>
       <div>
@@ -398,7 +401,7 @@ function renderCourses(){
     const easy = avg(c.reviews,'easy');
     const gain = avg(c.reviews,'gain');
     const pct = recommendPercent(c.reviews);
-    const badgeClass = c.type==="必修" ? "badge-required" : "badge-elective";
+    const badgeClass = c.type==="必修" ? "badge-required" : c.type==="選修" ? "badge-elective" : "badge-general";
     const card = document.createElement('div');
     card.className = "card rounded-xl p-5 cursor-pointer fade-in";
     card.onclick = ()=> openCourseModal(c.id);
@@ -432,7 +435,7 @@ function openCourseModal(id){
   const sweet = avg(c.reviews,'sweet'), easy = avg(c.reviews,'easy'), gain = avg(c.reviews,'gain');
   const pct = recommendPercent(c.reviews);
 
-  document.getElementById('modalBadge').className = "text-[10px] font-mono px-2 py-1 rounded-full " + (c.type==="必修"?"badge-required":"badge-elective");
+  document.getElementById('modalBadge').className = "text-[10px] font-mono px-2 py-1 rounded-full " + (c.type==="必修"?"badge-required":c.type==="選修"?"badge-elective":"badge-general");
   document.getElementById('modalBadge').textContent = c.type;
   document.getElementById('modalTitle').textContent = c.name;
   document.getElementById('modalTeacher').textContent = c.teacher + " 老師";
