@@ -143,6 +143,7 @@
       </div>
       <div class="flex items-center gap-3 shrink-0">
         <div id="modalRecommendRing" class="recommend-ring w-20 h-20"></div>
+        <button id="deleteCourseBtn" class="hidden review-action text-xs font-mono text-[var(--red)] border border-[var(--red)] rounded-lg px-2 py-1.5" title="刪除整門課程">🗑️ 刪除課程</button>
         <button onclick="closeModal('courseModal')" class="text-[var(--muted)] hover:text-[var(--text)] text-2xl leading-none">&times;</button>
       </div>
     </div>
@@ -454,6 +455,10 @@ function openCourseModal(id){
   editNameBtn.onclick = () => editCourseField(c.id, 'name', c.name);
   editTeacherBtn.onclick = () => editCourseField(c.id, 'teacher', c.teacher);
 
+  const deleteCourseBtn = document.getElementById('deleteCourseBtn');
+  deleteCourseBtn.classList.toggle('hidden', !isAdminMode);
+  deleteCourseBtn.onclick = () => deleteCourse(c.id, c.name);
+
   document.getElementById('modalStats').innerHTML = `
     <div class="text-center">
       <p class="text-2xl font-display font-bold" style="color:${hasData?'var(--amber)':'var(--line)'}">${starString(sweet)}</p>
@@ -549,6 +554,19 @@ function toggleAdminMode(){
     google.accounts.id.renderButton(container, { theme: "outline", size: "large", text: "signin_with" });
   } else {
     container.innerHTML = `<p class="text-xs text-[var(--red)] font-mono">Google 登入元件載入失敗，請確認網路連線，並確認是用 https 網址開啟（非本機檔案）</p>`;
+  }
+}
+
+async function deleteCourse(courseId, courseName){
+  const confirmed = confirm(`確定要刪除「${courseName}」這整門課程嗎？\n底下所有心得也會一併刪除，此動作無法復原。`);
+  if(!confirmed) return;
+  const result = await postToSheet({ action:'deleteCourse', courseId: courseId, idToken: currentIdToken });
+  if(result.success){
+    closeModal('courseModal');
+    await loadCoursesFromSheet();
+    showToast("🗑️ 課程已刪除");
+  } else {
+    alert("刪除失敗，請稍後再試：" + (result.error || ""));
   }
 }
 
