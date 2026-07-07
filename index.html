@@ -287,6 +287,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxLA3GGZmqqhIU08Kj98G_p
 // ---------- 更新紀錄 ----------
 // 每次新增/調整功能時會自動在最上面補一筆，最新的版本永遠排在最前面
 const changelogEntries = [
+  { version: "v1.9", items: [
+    "修正心得發文時間顯示異常，統一格式為「年/月/日 時:分」"
+  ]},
+  { version: "v1.8", items: [
+    "新增心得 IP 記錄，僅管理員登入後可查看，用於追查不當留言來源"
+  ]},
   { version: "v1.7", items: [
     "首頁新增「目前已累積 X 則心得」統計顯示"
   ]},
@@ -344,11 +350,26 @@ function openChangelogModal(){
   showModal('changelogModal');
 }
 
+// 透過第三方服務取得訪客的公開 IP（GAS 本身無法直接取得請求端 IP，只能靠瀏覽器自行回報）
+async function getVisitorIp(){
+  try {
+    const res = await fetch('https://api.ipify.org?format=json');
+    const data = await res.json();
+    return data.ip || '';
+  } catch(err){
+    console.error("取得 IP 失敗：", err);
+    return '';
+  }
+}
+
 let courses = [];
 
 async function loadCoursesFromSheet(){
   try {
-    const res = await fetch(GAS_URL);
+    const url = (isAdminMode && currentIdToken)
+      ? GAS_URL + '?idToken=' + encodeURIComponent(currentIdToken)
+      : GAS_URL;
+    const res = await fetch(url);
     const rawText = await res.text();
     let data;
     try {
@@ -605,6 +626,7 @@ function openCourseModal(id){
             ❤️ <span>${r.likes || 0}</span>
           </button>
           ${isAdminMode ? `
+          <span class="text-[10px] font-mono text-[var(--muted)]">IP: ${r.ip || '未知'}</span>
           <button onclick="editReview(${c.id}, ${r.reviewId})" class="review-action text-xs font-mono text-[var(--indigo)]">✏️ 編輯</button>
           <button onclick="deleteReview(${c.id}, ${r.reviewId})" class="review-action text-xs font-mono text-[var(--red)]">🗑️ 刪除</button>` : ``}
         </div>
@@ -877,6 +899,7 @@ document.getElementById('reviewForm').addEventListener('submit', async function(
 
   const today = new Date();
   const dateStr = `${today.getFullYear()}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')} ${String(today.getHours()).padStart(2,'0')}:${String(today.getMinutes()).padStart(2,'0')}`;
+  const visitorIp = await getVisitorIp();
 
   try {
     const result = await postToSheet({
@@ -887,7 +910,8 @@ document.getElementById('reviewForm').addEventListener('submit', async function(
       gain: currentRating.gain,
       recommend: currentRecommend,
       comment: comment,
-      date: dateStr
+      date: dateStr,
+      ip: visitorIp
     });
 
     if(result.success){
