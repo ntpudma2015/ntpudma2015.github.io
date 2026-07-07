@@ -238,6 +238,16 @@
   </div>
 </div>
 
+<!-- LIKE LOGIN MODAL -->
+<div id="likeLoginModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
+  <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-sm shadow-xl p-6 text-center">
+    <h2 class="font-display font-bold text-lg text-[var(--text)] mb-2">登入才能按讚</h2>
+    <p class="text-xs text-[var(--muted)] font-mono mb-5">用 Google 帳號登入一下，防止有人重複按讚</p>
+    <div id="likeGoogleSignInButton" class="flex justify-center"></div>
+    <button onclick="closeModal('likeLoginModal')" class="mt-5 text-xs font-mono text-[var(--muted)] hover:text-[var(--text)]">取消</button>
+  </div>
+</div>
+
 <!-- ADMIN LOGIN MODAL -->
 <div id="adminLoginModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
   <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-sm shadow-xl p-6 text-center">
@@ -482,7 +492,7 @@ function openCourseModal(id){
   if(!hasData){
     reviewsEl.innerHTML = `<p class="text-center text-sm font-mono text-[var(--muted)] py-8">目前還沒有心得留言，成為第一位分享經驗的同學吧！</p>`;
   } else {
-    reviewsEl.innerHTML = c.reviews.map((r, idx)=>`
+    reviewsEl.innerHTML = c.reviews.slice().sort((a,b) => (b.likes||0) - (a.likes||0)).map((r, idx)=>`
       <div class="bg-[var(--surface-2)] border border-[var(--line)] rounded-lg p-4">
         <div class="flex gap-3 text-[10px] font-mono mb-2 items-center">
           <span style="color:var(--amber)">🍯${r.sweet}</span>
@@ -492,13 +502,16 @@ function openCourseModal(id){
           <span class="ml-auto text-[var(--muted)]">${r.date}</span>
         </div>
         <p class="text-sm leading-relaxed text-[var(--text)]">${r.comment}</p>
-        ${isAdminMode ? `
-        <div class="flex gap-3 mt-3 pt-3 border-t border-[var(--line)]">
+        <div class="flex items-center gap-3 mt-3 pt-3 border-t border-[var(--line)]">
+          <button onclick="likeReview(${r.reviewId})" class="review-action text-xs font-mono text-[var(--muted)] hover:text-[var(--red)] flex items-center gap-1">
+            ❤️ <span>${r.likes || 0}</span>
+          </button>
+          ${isAdminMode ? `
           <button onclick="editReview(${c.id}, ${r.reviewId})" class="review-action text-xs font-mono text-[var(--indigo)]">✏️ 編輯</button>
-          <button onclick="deleteReview(${c.id}, ${r.reviewId})" class="review-action text-xs font-mono text-[var(--red)]">🗑️ 刪除</button>
-        </div>` : ``}
+          <button onclick="deleteReview(${c.id}, ${r.reviewId})" class="review-action text-xs font-mono text-[var(--red)]">🗑️ 刪除</button>` : ``}
+        </div>
       </div>
-    `).reverse().join("");
+    `).join("");
   }
 
   showModal('courseModal');
@@ -508,6 +521,8 @@ function openCourseModal(id){
 // ⚠️ 請換成你在 Google Cloud Console 申請的 Client ID（要跟 GAS 裡設定的同一組）
 const GOOGLE_CLIENT_ID = "378596510854-louifc2cag698s3mt76lg8n8elgburpm.apps.googleusercontent.com";
 let currentIdToken = null;
+let pendingLoginPurpose = null;
+let pendingLikeReviewId = null;
 
 function initGoogleSignIn(){
   if(typeof google === 'undefined') return;
@@ -519,17 +534,26 @@ function initGoogleSignIn(){
 
 function handleCredentialResponse(response){
   currentIdToken = response.credential;
-  isAdminMode = true;
-  closeModal('adminLoginModal');
 
-  const btn = document.getElementById('adminToggleBtn');
-  btn.textContent = "🔓 管理模式中（點擊登出）";
-  btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--indigo)] bg-[var(--indigo-soft)] text-[var(--indigo)] font-semibold flex items-center gap-1.5";
-
-  showToast("✅ 已登入管理模式");
-  if(currentOpenCourseId !== null && !document.getElementById('courseModal').classList.contains('hidden')){
-    openCourseModal(currentOpenCourseId);
+  if(pendingLoginPurpose === 'admin'){
+    isAdminMode = true;
+    closeModal('adminLoginModal');
+    const btn = document.getElementById('adminToggleBtn');
+    btn.textContent = "🔓 管理模式中（點擊登出）";
+    btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--indigo)] bg-[var(--indigo-soft)] text-[var(--indigo)] font-semibold flex items-center gap-1.5";
+    showToast("✅ 已登入管理模式");
+    if(currentOpenCourseId !== null && !document.getElementById('courseModal').classList.contains('hidden')){
+      openCourseModal(currentOpenCourseId);
+    }
+  } else if(pendingLoginPurpose === 'like'){
+    closeModal('likeLoginModal');
+    const reviewId = pendingLikeReviewId;
+    pendingLikeReviewId = null;
+    if(reviewId !== null){
+      performLike(reviewId);
+    }
   }
+  pendingLoginPurpose = null;
 }
 
 function toggleAdminMode(){
@@ -547,6 +571,7 @@ function toggleAdminMode(){
     return;
   }
   // 登入：打開 Google 登入視窗
+  pendingLoginPurpose = 'admin';
   showModal('adminLoginModal');
   const container = document.getElementById('googleSignInButton');
   container.innerHTML = "";
@@ -554,6 +579,36 @@ function toggleAdminMode(){
     google.accounts.id.renderButton(container, { theme: "outline", size: "large", text: "signin_with" });
   } else {
     container.innerHTML = `<p class="text-xs text-[var(--red)] font-mono">Google 登入元件載入失敗，請確認網路連線，並確認是用 https 網址開啟（非本機檔案）</p>`;
+  }
+}
+
+async function likeReview(reviewId){
+  if(!currentIdToken){
+    pendingLoginPurpose = 'like';
+    pendingLikeReviewId = reviewId;
+    showModal('likeLoginModal');
+    const container = document.getElementById('likeGoogleSignInButton');
+    container.innerHTML = "";
+    if(typeof google !== 'undefined'){
+      google.accounts.id.renderButton(container, { theme: "outline", size: "large", text: "signin_with" });
+    } else {
+      container.innerHTML = `<p class="text-xs text-[var(--red)] font-mono">Google 登入元件載入失敗，請確認網路連線</p>`;
+    }
+    return;
+  }
+  await performLike(reviewId);
+}
+
+async function performLike(reviewId){
+  const result = await postToSheet({ action:'likeReview', reviewId: reviewId, idToken: currentIdToken });
+  if(result.success){
+    await loadCoursesFromSheet();
+    if(currentOpenCourseId !== null){
+      openCourseModal(currentOpenCourseId);
+    }
+    showToast("❤️ 感謝你的按讚！");
+  } else {
+    alert(result.error || "按讚失敗，請稍後再試");
   }
 }
 
@@ -792,7 +847,7 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
 });
 
 // click backdrop to close
-['courseModal','reviewModal','addCourseModal','adminLoginModal'].forEach(id=>{
+['courseModal','reviewModal','addCourseModal','adminLoginModal','likeLoginModal'].forEach(id=>{
   document.getElementById(id).addEventListener('click', function(e){
     if(e.target === this) closeModal(id);
   });
