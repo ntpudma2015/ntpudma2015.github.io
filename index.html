@@ -410,6 +410,14 @@ function renderCourses(){
     list = list.filter(c => c.name.toLowerCase().includes(q) || c.teacher.toLowerCase().includes(q));
   }
 
+  // 有心得的課程排在前面，沒有心得的排到後面；同樣有心得的課程依心得數量多寡排序
+  list = list.slice().sort((a, b) => {
+    const aHas = a.reviews.length > 0 ? 1 : 0;
+    const bHas = b.reviews.length > 0 ? 1 : 0;
+    if(bHas !== aHas) return bHas - aHas;
+    return b.reviews.length - a.reviews.length;
+  });
+
   grid.innerHTML = "";
   empty.classList.toggle('hidden', list.length !== 0);
 
