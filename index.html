@@ -132,8 +132,14 @@
     <div class="p-5 border-b border-[var(--line)] flex items-start justify-between gap-4">
       <div>
         <span id="modalBadge" class="text-[10px] font-mono px-2 py-1 rounded-full"></span>
-        <h2 id="modalTitle" class="font-display font-bold text-xl mt-2 text-[var(--text)]"></h2>
-        <p id="modalTeacher" class="text-sm text-[var(--muted)] font-mono"></p>
+        <div class="flex items-center gap-1.5 mt-2">
+          <h2 id="modalTitle" class="font-display font-bold text-xl text-[var(--text)]"></h2>
+          <button id="editCourseNameBtn" class="hidden review-action text-xs text-[var(--indigo)]" title="編輯課程名稱">✏️</button>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <p id="modalTeacher" class="text-sm text-[var(--muted)] font-mono"></p>
+          <button id="editCourseTeacherBtn" class="hidden review-action text-xs text-[var(--indigo)]" title="編輯授課教師">✏️</button>
+        </div>
       </div>
       <div class="flex items-center gap-3 shrink-0">
         <div id="modalRecommendRing" class="recommend-ring w-20 h-20"></div>
@@ -441,6 +447,13 @@ function openCourseModal(id){
   document.getElementById('modalTeacher').textContent = c.teacher + " 老師";
   document.getElementById('modalRecommendRing').innerHTML = ringHTML(pct, 80, 20);
 
+  const editNameBtn = document.getElementById('editCourseNameBtn');
+  const editTeacherBtn = document.getElementById('editCourseTeacherBtn');
+  editNameBtn.classList.toggle('hidden', !isAdminMode);
+  editTeacherBtn.classList.toggle('hidden', !isAdminMode);
+  editNameBtn.onclick = () => editCourseField(c.id, 'name', c.name);
+  editTeacherBtn.onclick = () => editCourseField(c.id, 'teacher', c.teacher);
+
   document.getElementById('modalStats').innerHTML = `
     <div class="text-center">
       <p class="text-2xl font-display font-bold" style="color:${hasData?'var(--amber)':'var(--line)'}">${starString(sweet)}</p>
@@ -536,6 +549,26 @@ function toggleAdminMode(){
     google.accounts.id.renderButton(container, { theme: "outline", size: "large", text: "signin_with" });
   } else {
     container.innerHTML = `<p class="text-xs text-[var(--red)] font-mono">Google 登入元件載入失敗，請確認網路連線，並確認是用 https 網址開啟（非本機檔案）</p>`;
+  }
+}
+
+async function editCourseField(courseId, field, currentValue){
+  const label = field === 'name' ? '課程名稱' : '授課教師';
+  const updated = prompt(`編輯${label}：`, currentValue);
+  if(updated === null) return;
+  if(updated.trim() === ""){
+    alert("內容不可空白");
+    return;
+  }
+  const payload = { action:'editCourse', courseId: courseId, idToken: currentIdToken };
+  payload[field] = updated.trim();
+  const result = await postToSheet(payload);
+  if(result.success){
+    await loadCoursesFromSheet();
+    openCourseModal(courseId);
+    showToast("✅ 課程資訊已更新");
+  } else {
+    alert("更新失敗，請稍後再試：" + (result.error || ""));
   }
 }
 
