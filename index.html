@@ -410,11 +410,15 @@ function renderCourses(){
     list = list.filter(c => c.name.toLowerCase().includes(q) || c.teacher.toLowerCase().includes(q));
   }
 
-  // 有心得的課程排在前面，沒有心得的排到後面；同樣有心得的課程依心得數量多寡排序
+  // 有心得的課程排在前面，且依「推薦指數」由高到低排序；指數相同則心得數量多的排前面；沒有心得的排到最後
   list = list.slice().sort((a, b) => {
     const aHas = a.reviews.length > 0 ? 1 : 0;
     const bHas = b.reviews.length > 0 ? 1 : 0;
     if(bHas !== aHas) return bHas - aHas;
+    if(aHas === 0) return 0;
+    const aPct = recommendPercent(a.reviews);
+    const bPct = recommendPercent(b.reviews);
+    if(bPct !== aPct) return bPct - aPct;
     return b.reviews.length - a.reviews.length;
   });
 
