@@ -85,31 +85,31 @@
       </div>
     </div>
     <div class="flex items-center gap-2">
-      <div class="relative dropdown-wrapper">
-        <button onclick="toggleDropdown('moreMenu')" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5">
-          ⋯ 更多
-        </button>
-        <div id="moreMenu" class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-[var(--surface)] border border-[var(--line)] rounded-xl shadow-lg py-1.5 z-40">
-          <button onclick="openFeedbackModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">💬 意見回饋</button>
-          <button onclick="openChangelogModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🗂️ 更新紀錄</button>
-          <button id="viewToggleBtn" onclick="toggleViewMode()" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">📱 手機預覽</button>
-        </div>
-      </div>
-
-      <div class="relative dropdown-wrapper">
-        <button id="adminToolsBtn" onclick="toggleDropdown('adminToolsMenu')" class="hidden admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--red)] hover:text-[var(--red)] flex items-center gap-1.5">
-          🛠️ 管理工具
-        </button>
-        <div id="adminToolsMenu" class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-[var(--surface)] border border-[var(--line)] rounded-xl shadow-lg py-1.5 z-40">
-          <button onclick="openLatestReviewsModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🆕 最新心得</button>
-          <button onclick="openReportedReviewsModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🚩 檢舉列表</button>
-          <button onclick="openFeedbackInboxModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">📮 意見信箱</button>
-        </div>
-      </div>
-
-      <button id="adminToggleBtn" onclick="toggleAdminMode()" title="原型示範用，正式上線需改為後端驗證" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5">
-        🔒 管理模式
+      <button onclick="openFeedbackModal()" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--cyan)] hover:text-[var(--cyan)] flex items-center gap-1.5">
+        💬 意見回饋
       </button>
+      <button id="viewToggleBtn" onclick="toggleViewMode()" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)] flex items-center gap-1.5">
+        📱 手機預覽
+      </button>
+
+      <div class="relative dropdown-wrapper">
+        <button onclick="toggleDropdown('settingsMenu', this)" class="admin-btn font-mono text-xs w-9 h-9 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center justify-center" title="更多設定">
+          ⚙️
+        </button>
+        <div id="settingsMenu" class="dropdown-menu hidden w-52 bg-[var(--surface)] border border-[var(--line)] rounded-xl shadow-xl py-1.5 z-50">
+          <button onclick="openChangelogModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🗂️ 更新紀錄</button>
+          <div class="my-1 border-t border-[var(--line)]"></div>
+          <button id="adminToggleBtn" onclick="toggleAdminMode()" title="原型示範用，正式上線需改為後端驗證" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🔒 管理模式</button>
+          <div id="adminToolsSection" class="hidden">
+            <div class="my-1 border-t border-[var(--line)]"></div>
+            <p class="px-4 pt-1 pb-1.5 text-[10px] font-mono text-[var(--muted)] tracking-wide">管理工具</p>
+            <button onclick="openLatestReviewsModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🆕 最新心得</button>
+            <button onclick="openReportedReviewsModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🚩 檢舉列表</button>
+            <button onclick="openFeedbackInboxModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">📮 意見信箱</button>
+          </div>
+        </div>
+      </div>
+
       <button onclick="openAddCourseModal()" class="shrink-0 font-display font-semibold text-sm border border-[var(--indigo)] text-[var(--indigo)] px-4 py-2.5 rounded-lg hover:bg-[var(--indigo-soft)] active:scale-95 transition">
         ＋ 新增課程
       </button>
@@ -123,7 +123,7 @@
 
 <!-- HERO / FILTER -->
 <section class="max-w-6xl mx-auto px-5 pt-10 pb-6">
-  <h1 id="heroTitle" class="font-display font-bold text-3xl md:text-4xl mb-3 text-[var(--text)]">前人種樹，後人選課：數位行銷修課指南。</h1>
+  <h1 id="heroTitle" class="font-display font-bold text-2xl sm:text-3xl md:text-4xl mb-3 text-[var(--text)] leading-snug">前人種樹，後人選課：<br class="sm:hidden">數位行銷修課指南。</h1>
   <p id="totalReviewsStat" class="font-mono text-xs text-[var(--mint)] mb-6"></p>
 
   <div class="relative mb-4">
@@ -371,6 +371,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxLA3GGZmqqhIU08Kj98G_p
 // ---------- 更新紀錄 ----------
 // 每次新增/調整功能時會自動在最上面補一筆，最新的版本永遠排在最前面
 const changelogEntries = [
+  { version: "v2.5", items: [
+    "修正下拉選單在手機版會超出螢幕的排版錯誤，改用動態定位確保永遠顯示在畫面內",
+    "重新調整頁首優先順序：常用的「意見回饋」「手機預覽」改回直接可見，較少用的功能收進單一「⚙️」選單"
+  ]},
   { version: "v2.4", items: [
     "整體版面優化：頁首按鈕從最多 9 顆整併為「⋯ 更多」「🛠️ 管理工具」兩個下拉選單，手機與電腦版都更清爽",
     "修正課程詳情視窗在手機窄螢幕上標題與按鈕擠壓的排版問題"
@@ -460,11 +464,25 @@ async function getVisitorIp(){
 }
 
 // ---------- 下拉選單控制 ----------
-function toggleDropdown(id){
+function toggleDropdown(id, btnEl){
   const menu = document.getElementById(id);
   const isOpen = !menu.classList.contains('hidden');
   closeAllDropdowns();
-  if(!isOpen) menu.classList.remove('hidden');
+  if(isOpen) return;
+
+  menu.classList.remove('hidden');
+  // 用按鈕在畫面上的實際位置來定位選單，並確保不會超出螢幕左右邊界
+  // （用 fixed + JS 計算，不用單純的 CSS absolute right-0，
+  //   因為按鈕在手機版可能被擠到畫面偏左的地方，right-0 會導致選單被推到螢幕外）
+  const rect = btnEl.getBoundingClientRect();
+  const menuWidth = menu.offsetWidth;
+  let left = rect.right - menuWidth;
+  const margin = 8;
+  if(left < margin) left = margin;
+  if(left + menuWidth > window.innerWidth - margin) left = window.innerWidth - menuWidth - margin;
+  menu.style.position = 'fixed';
+  menu.style.top = (rect.bottom + 8) + 'px';
+  menu.style.left = left + 'px';
 }
 function closeAllDropdowns(){
   document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
@@ -785,15 +803,13 @@ function initGoogleSignIn(){
 
 function updateAdminButtonUI(){
   const btn = document.getElementById('adminToggleBtn');
-  const adminToolsBtn = document.getElementById('adminToolsBtn');
+  const adminToolsSection = document.getElementById('adminToolsSection');
   if(isAdminMode){
-    btn.textContent = "🔓 管理模式中（點擊登出）";
-    btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--indigo)] bg-[var(--indigo-soft)] text-[var(--indigo)] font-semibold flex items-center gap-1.5";
-    if(adminToolsBtn) adminToolsBtn.classList.remove('hidden');
+    btn.textContent = "🔓 登出管理模式";
+    if(adminToolsSection) adminToolsSection.classList.remove('hidden');
   } else {
     btn.textContent = "🔒 管理模式";
-    btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5";
-    if(adminToolsBtn) adminToolsBtn.classList.add('hidden');
+    if(adminToolsSection) adminToolsSection.classList.add('hidden');
     closeAllDropdowns();
   }
 }
