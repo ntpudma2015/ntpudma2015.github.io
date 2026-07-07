@@ -287,6 +287,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxLA3GGZmqqhIU08Kj98G_p
 // ---------- 更新紀錄 ----------
 // 每次新增/調整功能時會自動在最上面補一筆，最新的版本永遠排在最前面
 const changelogEntries = [
+  { version: "v2.0", items: [
+    "修正安全漏洞：任何 Google 帳號登入後都能看到管理模式（含 IP 資訊），改為完全由後端白名單驗證結果決定是否顯示管理員介面"
+  ]},
   { version: "v1.9", items: [
     "修正心得發文時間顯示異常，統一格式為「年/月/日 時:分」"
   ]},
@@ -366,7 +369,8 @@ let courses = [];
 
 async function loadCoursesFromSheet(){
   try {
-    const url = (isAdminMode && currentIdToken)
+    // 只要有登入憑證就一起送出，讓後端判斷這個帳號到底是不是白名單內的管理員
+    const url = currentIdToken
       ? GAS_URL + '?idToken=' + encodeURIComponent(currentIdToken)
       : GAS_URL;
     const res = await fetch(url);
@@ -381,6 +385,11 @@ async function loadCoursesFromSheet(){
     }
     if(data.success){
       courses = data.courses;
+      // 管理員身分完全以後端這次回傳的結果為準，前端不再自行假設
+      if(currentIdToken){
+        isAdminMode = !!data.isAdmin;
+        updateAdminButtonUI();
+      }
       renderCourses();
     } else {
       alert("讀取課程資料失敗：" + (data.error || "未知錯誤"));
@@ -652,17 +661,30 @@ function initGoogleSignIn(){
   });
 }
 
+function updateAdminButtonUI(){
+  const btn = document.getElementById('adminToggleBtn');
+  if(isAdminMode){
+    btn.textContent = "🔓 管理模式中（點擊登出）";
+    btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--indigo)] bg-[var(--indigo-soft)] text-[var(--indigo)] font-semibold flex items-center gap-1.5";
+  } else {
+    btn.textContent = "🔒 管理模式";
+    btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5";
+  }
+}
+
 async function handleCredentialResponse(response){
   currentIdToken = response.credential;
 
   if(pendingLoginPurpose === 'admin'){
-    isAdminMode = true;
     closeModal('adminLoginModal');
-    const btn = document.getElementById('adminToggleBtn');
-    btn.textContent = "🔓 管理模式中（點擊登出）";
-    btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--indigo)] bg-[var(--indigo-soft)] text-[var(--indigo)] font-semibold flex items-center gap-1.5";
-    showToast("✅ 已登入管理模式");
+    // 這裡不再自己假設登入成功＝管理員，而是讓 loadCoursesFromSheet 內部
+    // 把 idToken 送給後端驗證，isAdminMode 會依照伺服器回傳的 isAdmin 結果來設定
     await loadCoursesFromSheet();
+    if(isAdminMode){
+      showToast("✅ 已登入管理模式");
+    } else {
+      showToast("⚠️ 此帳號不在管理員白名單中，僅一般訪客權限");
+    }
     if(currentOpenCourseId !== null && !document.getElementById('courseModal').classList.contains('hidden')){
       openCourseModal(currentOpenCourseId);
     }
@@ -682,9 +704,7 @@ function toggleAdminMode(){
     // 登出
     isAdminMode = false;
     currentIdToken = null;
-    const btn = document.getElementById('adminToggleBtn');
-    btn.textContent = "🔒 管理模式";
-    btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5";
+    updateAdminButtonUI();
     showToast("已登出管理模式");
     loadCoursesFromSheet().then(() => {
       if(currentOpenCourseId !== null && !document.getElementById('courseModal').classList.contains('hidden')){
