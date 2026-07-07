@@ -105,7 +105,8 @@
 
 <!-- HERO / FILTER -->
 <section class="max-w-6xl mx-auto px-5 pt-10 pb-6">
-  <h1 id="heroTitle" class="font-display font-bold text-3xl md:text-4xl mb-6 text-[var(--text)]">前人種樹，後人選課：數位行銷修課指南。</h1>
+  <h1 id="heroTitle" class="font-display font-bold text-3xl md:text-4xl mb-3 text-[var(--text)]">前人種樹，後人選課：數位行銷修課指南。</h1>
+  <p id="totalReviewsStat" class="font-mono text-xs text-[var(--mint)] mb-6"></p>
 
   <div class="relative mb-4">
     <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
@@ -286,6 +287,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxLA3GGZmqqhIU08Kj98G_p
 // ---------- 更新紀錄 ----------
 // 每次新增/調整功能時會自動在最上面補一筆，最新的版本永遠排在最前面
 const changelogEntries = [
+  { version: "v1.7", items: [
+    "首頁新增「目前已累積 X 則心得」統計顯示"
+  ]},
   { version: "v1.6", items: [
     "課程列表改為依推薦指數由高到低排序",
     "撰寫心得的課程選單改為依教授姓名分組，方便找老師",
@@ -475,6 +479,16 @@ function miniStat(label, emoji, score, key, hasData){
 function renderCourses(){
   const grid = document.getElementById('courseGrid');
   const empty = document.getElementById('emptyState');
+
+  // 更新目前累積心得則數（統計全部課程，不受篩選/搜尋影響）
+  const totalReviews = courses.reduce((sum, c) => sum + c.reviews.length, 0);
+  const statEl = document.getElementById('totalReviewsStat');
+  if(statEl){
+    statEl.textContent = totalReviews > 0
+      ? `📝 目前已累積 ${totalReviews} 則心得，持續蒐集中！`
+      : `📝 目前還沒有心得，成為第一位分享經驗的同學吧！`;
+  }
+
   let list = courses.filter(c => currentFilter==="全部" || c.type===currentFilter);
   if(currentSearch.trim() !== ""){
     const q = currentSearch.trim().toLowerCase();
