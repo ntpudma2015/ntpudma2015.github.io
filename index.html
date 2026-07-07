@@ -60,6 +60,9 @@
   .admin-btn{ transition:all .15s ease; }
   .review-action{ transition:all .12s ease; }
   .review-action:hover{ transform:scale(1.1); }
+  @media (max-width: 640px){
+    #headerCredit{ display:none !important; }
+  }
 </style>
 </head>
 <body class="min-h-screen pb-24">
@@ -69,11 +72,13 @@
 <!-- NAV -->
 <header class="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--bg)]/90 backdrop-blur">
   <div class="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between gap-3 flex-wrap">
-    <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-[var(--mint)] to-[var(--indigo)] flex items-center justify-center font-display font-bold text-white text-sm">DM</div>
-      <div>
+    <div class="flex items-center gap-3 min-w-0">
+      <div class="min-w-0">
         <p class="font-display font-bold text-lg leading-none text-[var(--text)]">數位行銷修課分享網</p>
-        <p class="text-[11px] text-[var(--muted)] font-mono tracking-wide">DIGITAL MARKETING DEPT. INSIGHTS</p>
+        <div id="headerCredit">
+          <p class="text-[11px] text-[var(--muted)] mt-1 leading-snug">由 國立臺北大學數位行銷學系第十屆系學會 製作，願每位同學都能選其所愛、愛其所選。</p>
+          <p class="text-[9px] text-[var(--muted)]/60 font-mono tracking-wide mt-0.5">BUILT WITH ❤ BY NTPU DM 10TH STUDENT ASSOCIATION</p>
+        </div>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -96,8 +101,7 @@
 
 <!-- HERO / FILTER -->
 <section class="max-w-6xl mx-auto px-5 pt-10 pb-6">
-  <p class="font-mono text-[11px] text-[var(--mint)] tracking-[0.2em] mb-2 font-semibold">// 114 學年度課程資料庫 · 待同學們填入心得</p>
-  <h1 id="heroTitle" class="font-display font-bold text-3xl md:text-4xl mb-6 text-[var(--text)]">學長姐的真心話，都在這裡。</h1>
+  <h1 id="heroTitle" class="font-display font-bold text-3xl md:text-4xl mb-6 text-[var(--text)]">前人種樹，後人選課：數位行銷修課指南。</h1>
 
   <div class="relative mb-4">
     <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
@@ -295,6 +299,7 @@ function toggleViewMode(){
   const btn = document.getElementById('viewToggleBtn');
   const grid = document.getElementById('courseGrid');
   const heroTitle = document.getElementById('heroTitle');
+  const credit = document.getElementById('headerCredit');
   if(isMobileView){
     wrapper.style.maxWidth = '430px';
     wrapper.style.border = '1px solid var(--line)';
@@ -306,6 +311,8 @@ function toggleViewMode(){
     // 所以用行內樣式直接蓋過，避免卡片被硬擠成三欄而跑版
     grid.style.gridTemplateColumns = '1fr';
     heroTitle.style.fontSize = '1.5rem';
+    // 手機版空間有限，先隱藏頁首的製作單位副標題，避免長句子擠壓跑版
+    if(credit) credit.style.display = 'none';
     btn.textContent = "💻 電腦版預覽";
     btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--mint)] bg-[var(--mint-soft)] text-[var(--mint)] font-semibold flex items-center gap-1.5";
   } else {
@@ -317,6 +324,7 @@ function toggleViewMode(){
     wrapper.style.marginBottom = '0';
     grid.style.gridTemplateColumns = '';
     heroTitle.style.fontSize = '';
+    if(credit) credit.style.display = '';
     btn.textContent = "📱 手機預覽";
     btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)] flex items-center gap-1.5";
   }
