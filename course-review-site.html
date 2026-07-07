@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>數位行銷修課分享網</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F6F7FB;
+    --surface: #FFFFFF;
+    --surface-2: #F0F2F8;
+    --line: #E3E6F0;
+    --text: #1C2333;
+    --muted: #6B7280;
+    --mint: #0EA678;
+    --mint-soft: #E6F7F0;
+    --indigo: #4F46E5;
+    --indigo-soft: #EDECFC;
+    --amber: #D97B0A;
+    --cyan: #0891B2;
+    --red: #DC4C4C;
+    --red-soft: #FDECEC;
+  }
+  *{ font-family:'Noto Sans TC','Space Grotesk',sans-serif; }
+  .font-display{ font-family:'Space Grotesk','Noto Sans TC',sans-serif; letter-spacing:-0.01em; }
+  .font-mono{ font-family:'JetBrains Mono',monospace; }
+  body{ background-color:var(--bg); color:var(--text);
+    background-image:
+      radial-gradient(circle at 12% 0%, rgba(79,70,229,0.06), transparent 40%),
+      radial-gradient(circle at 88% 15%, rgba(14,166,120,0.07), transparent 35%),
+      linear-gradient(rgba(28,35,51,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(28,35,51,0.035) 1px, transparent 1px);
+    background-size:auto, auto, 28px 28px, 28px 28px;
+  }
+  .card{ background:var(--surface); border:1px solid var(--line); transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+  .card:hover{ transform:translateY(-3px); border-color:rgba(14,166,120,0.5); box-shadow:0 10px 28px -14px rgba(28,35,51,0.22); }
+  .chip{ transition:all .15s ease; }
+  .bar-track{ background:var(--surface-2); border-radius:999px; overflow:hidden; }
+  .bar-fill{ height:100%; border-radius:999px; }
+  .star{ cursor:pointer; transition:transform .1s ease; }
+  .star:hover{ transform:scale(1.15); }
+  .modal-backdrop{ background:rgba(20,24,38,0.45); backdrop-filter:blur(3px); }
+  .scrollbar-thin::-webkit-scrollbar{ width:6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb{ background:var(--line); border-radius:99px; }
+  ::selection{ background:rgba(14,166,120,0.25); }
+  .badge-required{ background:var(--indigo-soft); color:var(--indigo); border:1px solid rgba(79,70,229,0.25); }
+  .badge-elective{ background:var(--mint-soft); color:var(--mint); border:1px solid rgba(14,166,120,0.3); }
+  .fade-in{ animation:fadeIn .22s ease both; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+  .pulse-dot{ animation:pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+  input:focus, textarea:focus, select:focus{ outline:none; box-shadow:0 0 0 2px rgba(14,166,120,0.4); border-color:var(--mint) !important; }
+  .recommend-ring{ border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .recommend-ring-inner{ background:var(--surface); border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .toggle-btn{ transition:all .15s ease; }
+  .admin-btn{ transition:all .15s ease; }
+  .review-action{ transition:all .12s ease; }
+  .review-action:hover{ transform:scale(1.1); }
+</style>
+</head>
+<body class="min-h-screen pb-24">
+
+<div id="appWrapper" class="mx-auto transition-all duration-300">
+
+<!-- NAV -->
+<header class="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--bg)]/90 backdrop-blur">
+  <div class="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between gap-3 flex-wrap">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-[var(--mint)] to-[var(--indigo)] flex items-center justify-center font-display font-bold text-white text-sm">DM</div>
+      <div>
+        <p class="font-display font-bold text-lg leading-none text-[var(--text)]">數位行銷修課分享網</p>
+        <p class="text-[11px] text-[var(--muted)] font-mono tracking-wide">DIGITAL MARKETING DEPT. INSIGHTS</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="viewToggleBtn" onclick="toggleViewMode()" title="切換電腦版／手機版預覽" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)] flex items-center gap-1.5">
+        📱 手機預覽
+      </button>
+      <button id="adminToggleBtn" onclick="toggleAdminMode()" title="原型示範用，正式上線需改為後端驗證" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5">
+        🔒 管理模式
+      </button>
+      <button onclick="openAddCourseModal()" class="shrink-0 font-display font-semibold text-sm border border-[var(--indigo)] text-[var(--indigo)] px-4 py-2.5 rounded-lg hover:bg-[var(--indigo-soft)] active:scale-95 transition">
+        ＋ 新增課程
+      </button>
+      <button onclick="openReviewModal()" class="shrink-0 font-display font-semibold text-sm bg-[var(--mint)] text-white px-4 py-2.5 rounded-lg hover:brightness-110 active:scale-95 transition flex items-center gap-2 shadow-sm shadow-[var(--mint)]/30">
+        <span class="pulse-dot inline-block w-1.5 h-1.5 rounded-full bg-white"></span>
+        撰寫心得
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO / FILTER -->
+<section class="max-w-6xl mx-auto px-5 pt-10 pb-6">
+  <p class="font-mono text-[11px] text-[var(--mint)] tracking-[0.2em] mb-2 font-semibold">// 114 學年度課程資料庫 · 待同學們填入心得</p>
+  <h1 id="heroTitle" class="font-display font-bold text-3xl md:text-4xl mb-6 text-[var(--text)]">學長姐的真心話，都在這裡。</h1>
+
+  <div class="relative mb-4">
+    <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"/></svg>
+    <input id="searchInput" type="text" placeholder="搜尋課程名稱或老師姓名..."
+      class="w-full bg-[var(--surface)] border border-[var(--line)] rounded-xl pl-11 pr-4 py-3.5 text-sm placeholder:text-[var(--muted)] shadow-sm" />
+  </div>
+
+  <div class="flex gap-2" id="filterTabs">
+    <button data-filter="全部" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--mint)] bg-[var(--mint)] text-white font-semibold">全部</button>
+    <button data-filter="必修" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)]">必修</button>
+    <button data-filter="選修" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)]">選修</button>
+  </div>
+</section>
+
+<!-- COURSE GRID -->
+<main class="max-w-6xl mx-auto px-5">
+  <div id="courseGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+  <p id="emptyState" class="hidden text-center text-[var(--muted)] font-mono text-sm py-16">// 找不到符合條件的課程，換個關鍵字試試，或點選「＋新增課程」把它加進來</p>
+</main>
+
+</div><!-- /#appWrapper -->
+
+<!-- COURSE DETAIL MODAL -->
+<div id="courseModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
+  <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col shadow-xl">
+    <div class="p-5 border-b border-[var(--line)] flex items-start justify-between gap-4">
+      <div>
+        <span id="modalBadge" class="text-[10px] font-mono px-2 py-1 rounded-full"></span>
+        <h2 id="modalTitle" class="font-display font-bold text-xl mt-2 text-[var(--text)]"></h2>
+        <p id="modalTeacher" class="text-sm text-[var(--muted)] font-mono"></p>
+      </div>
+      <div class="flex items-center gap-3 shrink-0">
+        <div id="modalRecommendRing" class="recommend-ring w-20 h-20"></div>
+        <button onclick="closeModal('courseModal')" class="text-[var(--muted)] hover:text-[var(--text)] text-2xl leading-none">&times;</button>
+      </div>
+    </div>
+
+    <div class="p-5 grid grid-cols-3 gap-3 border-b border-[var(--line)]" id="modalStats"></div>
+
+    <div id="modalExamLink" class="px-5 py-3 border-b border-[var(--line)]"></div>
+
+    <div class="p-5 overflow-y-auto scrollbar-thin flex-1 space-y-3" id="modalReviews"></div>
+  </div>
+</div>
+
+<!-- REVIEW FORM MODAL -->
+<div id="reviewModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
+  <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto scrollbar-thin shadow-xl">
+    <div class="p-5 border-b border-[var(--line)] flex items-center justify-between sticky top-0 bg-[var(--surface)] z-10">
+      <h2 class="font-display font-bold text-lg text-[var(--text)]">撰寫選課心得</h2>
+      <button onclick="closeModal('reviewModal')" class="text-[var(--muted)] hover:text-[var(--text)] text-2xl leading-none">&times;</button>
+    </div>
+    <form id="reviewForm" class="p-5 space-y-5">
+      <div>
+        <label class="block text-xs font-mono text-[var(--muted)] mb-1.5">選擇課程</label>
+        <select id="formCourse" required class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm"></select>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4">
+        <div>
+          <label class="block text-xs font-mono mb-1.5 flex justify-between"><span style="color:var(--amber)">🍯 甜度</span><span id="sweetLabel" class="text-[var(--muted)]">0/5</span></label>
+          <div class="flex gap-1" data-rating="sweet"></div>
+        </div>
+        <div>
+          <label class="block text-xs font-mono mb-1.5 flex justify-between"><span style="color:var(--cyan)">🧊 涼度</span><span id="easyLabel" class="text-[var(--muted)]">0/5</span></label>
+          <div class="flex gap-1" data-rating="easy"></div>
+        </div>
+        <div>
+          <label class="block text-xs font-mono mb-1.5 flex justify-between"><span style="color:var(--mint)">📈 收穫度</span><span id="gainLabel" class="text-[var(--muted)]">0/5</span></label>
+          <div class="flex gap-1" data-rating="gain"></div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-mono text-[var(--muted)] mb-2">你會推薦學弟妹修這門課嗎？</label>
+        <div class="grid grid-cols-2 gap-3">
+          <button type="button" id="recommendYes" class="toggle-btn border border-[var(--line)] rounded-lg py-3 text-sm font-semibold text-[var(--muted)]">👍 推薦</button>
+          <button type="button" id="recommendNo" class="toggle-btn border border-[var(--line)] rounded-lg py-3 text-sm font-semibold text-[var(--muted)]">👎 不推薦</button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-mono text-[var(--muted)] mb-1.5">心得內容</label>
+        <textarea id="formComment" required rows="4" placeholder="這門課的作業量、老師教學方式、上課氣氛..." class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm placeholder:text-[var(--muted)]"></textarea>
+      </div>
+
+      <button type="submit" class="w-full font-display font-semibold bg-[var(--mint)] text-white py-3 rounded-lg hover:brightness-110 active:scale-95 transition">送出心得</button>
+    </form>
+  </div>
+</div>
+
+<!-- ADD COURSE MODAL -->
+<div id="addCourseModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
+  <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-md shadow-xl">
+    <div class="p-5 border-b border-[var(--line)] flex items-center justify-between">
+      <div>
+        <h2 class="font-display font-bold text-lg text-[var(--text)]">新增課程</h2>
+        <p class="text-xs text-[var(--muted)] font-mono mt-0.5">找不到你要的課？自己加進資料庫吧</p>
+      </div>
+      <button onclick="closeModal('addCourseModal')" class="text-[var(--muted)] hover:text-[var(--text)] text-2xl leading-none">&times;</button>
+    </div>
+    <form id="addCourseForm" class="p-5 space-y-4">
+      <div>
+        <label class="block text-xs font-mono text-[var(--muted)] mb-1.5">必選修別</label>
+        <select id="newCourseType" required class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm">
+          <option value="必修">必修</option>
+          <option value="選修">選修</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-mono text-[var(--muted)] mb-1.5">課程名稱</label>
+        <input id="newCourseName" required type="text" placeholder="例如：品牌管理" class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm placeholder:text-[var(--muted)]" />
+      </div>
+      <div>
+        <label class="block text-xs font-mono text-[var(--muted)] mb-1.5">教授</label>
+        <input id="newCourseTeacher" required type="text" placeholder="若多位教師請用 / 分隔，例如：廖凱弘/趙雪君" class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm placeholder:text-[var(--muted)]" />
+      </div>
+      <div>
+        <label class="block text-xs font-mono text-[var(--muted)] mb-1.5">考古題連結（選填）</label>
+        <input id="newCourseExam" type="text" placeholder="https://..." class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm placeholder:text-[var(--muted)]" />
+      </div>
+      <button type="submit" class="w-full font-display font-semibold bg-[var(--indigo)] text-white py-3 rounded-lg hover:brightness-110 active:scale-95 transition">新增課程</button>
+    </form>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 hidden bg-[var(--surface)] border border-[var(--mint)] text-sm px-5 py-3 rounded-lg shadow-lg font-mono text-[var(--text)]">
+  ✅ 操作成功！
+</div>
+
+<script>
+// ---------- 從 Google Sheets 讀取真實資料 ----------
+// ⚠️ 請把下面這行換成你自己部署 GAS 網頁應用程式後拿到的網址
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxLA3GGZmqqhIU08Kj98G_pO3B3jhGIZkp7G_TTbNWJtjQ7Fv84sRlkB194RPhlWJuk/exec";
+
+let courses = [];
+
+async function loadCoursesFromSheet(){
+  try {
+    const res = await fetch(GAS_URL);
+    const data = await res.json();
+    if(data.success){
+      courses = data.courses;
+      renderCourses();
+    } else {
+      alert("讀取課程資料失敗，請確認 GAS 網址是否正確");
+    }
+  } catch(err){
+    console.error(err);
+    alert("無法連線到 Google Sheets 後端，請檢查網路連線或 GAS_URL 是否設定正確");
+  }
+}
+
+// 統一的寫入函式：呼叫 GAS 的 doPost
+async function postToSheet(payload){
+  const res = await fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+}
+
+let currentFilter = "全部";
+let currentSearch = "";
+let currentRating = { sweet:0, easy:0, gain:0 };
+let currentRecommend = null;
+let currentOpenCourseId = null;
+let isAdminMode = false;
+const ADMIN_PASSWORD = "admin123"; // 原型示範用，正式上線請改用後端驗證
+let isMobileView = false;
+
+// ---------- 電腦版／手機版預覽切換 ----------
+function toggleViewMode(){
+  isMobileView = !isMobileView;
+  const wrapper = document.getElementById('appWrapper');
+  const btn = document.getElementById('viewToggleBtn');
+  const grid = document.getElementById('courseGrid');
+  const heroTitle = document.getElementById('heroTitle');
+  if(isMobileView){
+    wrapper.style.maxWidth = '430px';
+    wrapper.style.border = '1px solid var(--line)';
+    wrapper.style.borderRadius = '28px';
+    wrapper.style.boxShadow = '0 24px 60px -24px rgba(28,35,51,0.35)';
+    wrapper.style.marginTop = '24px';
+    wrapper.style.marginBottom = '24px';
+    // 強制單欄排版：因為 md:/lg: 是依真實瀏覽器寬度判斷，縮小容器並不會觸發，
+    // 所以用行內樣式直接蓋過，避免卡片被硬擠成三欄而跑版
+    grid.style.gridTemplateColumns = '1fr';
+    heroTitle.style.fontSize = '1.5rem';
+    btn.textContent = "💻 電腦版預覽";
+    btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--mint)] bg-[var(--mint-soft)] text-[var(--mint)] font-semibold flex items-center gap-1.5";
+  } else {
+    wrapper.style.maxWidth = '100%';
+    wrapper.style.border = 'none';
+    wrapper.style.borderRadius = '0';
+    wrapper.style.boxShadow = 'none';
+    wrapper.style.marginTop = '0';
+    wrapper.style.marginBottom = '0';
+    grid.style.gridTemplateColumns = '';
+    heroTitle.style.fontSize = '';
+    btn.textContent = "📱 手機預覽";
+    btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)] flex items-center gap-1.5";
+  }
+}
+
+// ---------- HELPERS ----------
+function avg(reviews, key){
+  if(reviews.length === 0) return 0;
+  return reviews.reduce((s,r)=>s+r[key],0)/reviews.length;
+}
+function recommendPercent(reviews){
+  if(reviews.length === 0) return null;
+  return Math.round(reviews.filter(r=>r.recommend).length / reviews.length * 100);
+}
+function starString(score){
+  const rounded = Math.round(score);
+  return "★".repeat(rounded) + "☆".repeat(5-rounded);
+}
+function barColor(key){
+  return key==="sweet" ? "var(--amber)" : key==="easy" ? "var(--cyan)" : "var(--mint)";
+}
+function recommendColor(pct){
+  if(pct === null) return "var(--muted)";
+  if(pct >= 70) return "var(--mint)";
+  if(pct >= 40) return "var(--amber)";
+  return "var(--red)";
+}
+function ringHTML(pct, size, fontSize){
+  const color = recommendColor(pct);
+  const inner = size - 10;
+  const bg = pct === null ? "var(--surface-2)" : `conic-gradient(${color} ${pct}%, var(--surface-2) ${pct}% 100%)`;
+  const label = pct === null ? "－" : pct + "%";
+  return `
+    <div class="recommend-ring" style="width:${size}px; height:${size}px; background:${bg}; ${pct===null ? 'border:2px dashed var(--line);' : ''}">
+      <div class="recommend-ring-inner" style="width:${inner}px; height:${inner}px;">
+        <span class="font-display font-bold" style="font-size:${fontSize}px; color:${color};">${label}</span>
+        <span class="font-mono" style="font-size:8px; color:var(--muted);">推薦</span>
+      </div>
+    </div>`;
+}
+function miniStat(label, emoji, score, key, hasData){
+  const pct = hasData ? (score/5*100).toFixed(0) : 0;
+  const display = hasData ? score.toFixed(1) : "－";
+  return `
+    <div>
+      <div class="flex justify-between text-[10px] font-mono text-[var(--muted)] mb-1">
+        <span>${emoji} ${label}</span><span class="font-semibold" style="color:${hasData ? barColor(key) : 'var(--muted)'}">${display}</span>
+      </div>
+      <div class="bar-track h-1.5">
+        <div class="bar-fill" style="width:${pct}%; background:${barColor(key)};"></div>
+      </div>
+    </div>`;
+}
+
+// ---------- RENDER COURSE GRID ----------
+function renderCourses(){
+  const grid = document.getElementById('courseGrid');
+  const empty = document.getElementById('emptyState');
+  let list = courses.filter(c => currentFilter==="全部" || c.type===currentFilter);
+  if(currentSearch.trim() !== ""){
+    const q = currentSearch.trim().toLowerCase();
+    list = list.filter(c => c.name.toLowerCase().includes(q) || c.teacher.toLowerCase().includes(q));
+  }
+
+  grid.innerHTML = "";
+  empty.classList.toggle('hidden', list.length !== 0);
+
+  list.forEach(c=>{
+    const hasData = c.reviews.length > 0;
+    const sweet = avg(c.reviews,'sweet');
+    const easy = avg(c.reviews,'easy');
+    const gain = avg(c.reviews,'gain');
+    const pct = recommendPercent(c.reviews);
+    const badgeClass = c.type==="必修" ? "badge-required" : "badge-elective";
+    const card = document.createElement('div');
+    card.className = "card rounded-xl p-5 cursor-pointer fade-in";
+    card.onclick = ()=> openCourseModal(c.id);
+    card.innerHTML = `
+      <div class="flex items-start justify-between mb-3 gap-3">
+        <div>
+          <span class="text-[10px] font-mono px-2 py-1 rounded-full ${badgeClass}">${c.type}</span>
+          <p class="text-[10px] font-mono text-[var(--muted)] mt-1.5">${hasData ? c.reviews.length + ' 則心得' : '尚無心得'}</p>
+        </div>
+        ${ringHTML(pct, 56, 15)}
+      </div>
+      <h3 class="font-display font-bold text-lg mb-0.5 text-[var(--text)]">${c.name}</h3>
+      <p class="text-xs text-[var(--muted)] font-mono mb-4">${c.teacher} 老師</p>
+      <div class="space-y-2.5">
+        ${miniStat('甜度','🍯',sweet,'sweet',hasData)}
+        ${miniStat('涼度','🧊',easy,'easy',hasData)}
+        ${miniStat('收穫度','📈',gain,'gain',hasData)}
+      </div>
+      ${!hasData ? `<p class="text-[11px] font-mono text-[var(--indigo)] mt-3">✏️ 成為第一位分享心得的同學！</p>` : ``}
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ---------- COURSE DETAIL MODAL ----------
+function openCourseModal(id){
+  const c = courses.find(x=>x.id===id);
+  if(!c) return;
+  currentOpenCourseId = id;
+  const hasData = c.reviews.length > 0;
+  const sweet = avg(c.reviews,'sweet'), easy = avg(c.reviews,'easy'), gain = avg(c.reviews,'gain');
+  const pct = recommendPercent(c.reviews);
+
+  document.getElementById('modalBadge').className = "text-[10px] font-mono px-2 py-1 rounded-full " + (c.type==="必修"?"badge-required":"badge-elective");
+  document.getElementById('modalBadge').textContent = c.type;
+  document.getElementById('modalTitle').textContent = c.name;
+  document.getElementById('modalTeacher').textContent = c.teacher + " 老師";
+  document.getElementById('modalRecommendRing').innerHTML = ringHTML(pct, 80, 20);
+
+  document.getElementById('modalStats').innerHTML = `
+    <div class="text-center">
+      <p class="text-2xl font-display font-bold" style="color:${hasData?'var(--amber)':'var(--line)'}">${starString(sweet)}</p>
+      <p class="text-[10px] font-mono text-[var(--muted)] mt-1">甜度 ${hasData?sweet.toFixed(1):'－'}</p>
+    </div>
+    <div class="text-center">
+      <p class="text-2xl font-display font-bold" style="color:${hasData?'var(--cyan)':'var(--line)'}">${starString(easy)}</p>
+      <p class="text-[10px] font-mono text-[var(--muted)] mt-1">涼度 ${hasData?easy.toFixed(1):'－'}</p>
+    </div>
+    <div class="text-center">
+      <p class="text-2xl font-display font-bold" style="color:${hasData?'var(--mint)':'var(--line)'}">${starString(gain)}</p>
+      <p class="text-[10px] font-mono text-[var(--muted)] mt-1">收穫度 ${hasData?gain.toFixed(1):'－'}</p>
+    </div>
+  `;
+
+  document.getElementById('modalExamLink').innerHTML = c.examLink
+    ? `<a href="${c.examLink}" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-mono text-[var(--indigo)] hover:underline">📎 前往考古題連結</a>`
+    : `<p class="text-xs font-mono text-[var(--muted)]">目前尚無考古題連結</p>`;
+
+  const reviewsEl = document.getElementById('modalReviews');
+  if(!hasData){
+    reviewsEl.innerHTML = `<p class="text-center text-sm font-mono text-[var(--muted)] py-8">目前還沒有心得留言，成為第一位分享經驗的同學吧！</p>`;
+  } else {
+    reviewsEl.innerHTML = c.reviews.map((r, idx)=>`
+      <div class="bg-[var(--surface-2)] border border-[var(--line)] rounded-lg p-4">
+        <div class="flex gap-3 text-[10px] font-mono mb-2 items-center">
+          <span style="color:var(--amber)">🍯${r.sweet}</span>
+          <span style="color:var(--cyan)">🧊${r.easy}</span>
+          <span style="color:var(--mint)">📈${r.gain}</span>
+          <span style="color:${r.recommend ? 'var(--mint)' : 'var(--red)'}">${r.recommend ? '👍 推薦' : '👎 不推薦'}</span>
+          <span class="ml-auto text-[var(--muted)]">${r.date}</span>
+        </div>
+        <p class="text-sm leading-relaxed text-[var(--text)]">${r.comment}</p>
+        ${isAdminMode ? `
+        <div class="flex gap-3 mt-3 pt-3 border-t border-[var(--line)]">
+          <button onclick="editReview(${c.id}, ${r.reviewId})" class="review-action text-xs font-mono text-[var(--indigo)]">✏️ 編輯</button>
+          <button onclick="deleteReview(${c.id}, ${r.reviewId})" class="review-action text-xs font-mono text-[var(--red)]">🗑️ 刪除</button>
+        </div>` : ``}
+      </div>
+    `).reverse().join("");
+  }
+
+  showModal('courseModal');
+}
+
+// ---------- ADMIN MODE ----------
+function toggleAdminMode(){
+  if(!isAdminMode){
+    const input = prompt("請輸入管理密碼\n（原型示範用，正式上線需改為後端帳號驗證）");
+    if(input === null) return;
+    if(input !== ADMIN_PASSWORD){
+      alert("密碼錯誤，無法進入管理模式");
+      return;
+    }
+    isAdminMode = true;
+  } else {
+    isAdminMode = false;
+  }
+  const btn = document.getElementById('adminToggleBtn');
+  if(isAdminMode){
+    btn.textContent = "🔓 管理模式中（點擊退出）";
+    btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--indigo)] bg-[var(--indigo-soft)] text-[var(--indigo)] font-semibold flex items-center gap-1.5";
+  } else {
+    btn.textContent = "🔒 管理模式";
+    btn.className = "admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5";
+  }
+  if(currentOpenCourseId !== null && !document.getElementById('courseModal').classList.contains('hidden')){
+    openCourseModal(currentOpenCourseId);
+  }
+}
+
+async function editReview(courseId, reviewId){
+  const c = courses.find(x=>x.id===courseId);
+  const r = c.reviews.find(rv=>rv.reviewId===reviewId);
+  const updated = prompt("編輯心得內容（可修正不實或不當文字）：", r.comment);
+  if(updated === null) return;
+  if(updated.trim() === ""){
+    alert("內容不可空白");
+    return;
+  }
+  const result = await postToSheet({ action:'editReview', reviewId: reviewId, comment: updated.trim() });
+  if(result.success){
+    await loadCoursesFromSheet();
+    openCourseModal(courseId);
+    showToast("✅ 心得已更新");
+  } else {
+    alert("更新失敗，請稍後再試：" + (result.error || ""));
+  }
+}
+
+async function deleteReview(courseId, reviewId){
+  if(!confirm("確定要刪除這則心得嗎？此動作無法復原。")) return;
+  const result = await postToSheet({ action:'deleteReview', reviewId: reviewId });
+  if(result.success){
+    await loadCoursesFromSheet();
+    openCourseModal(courseId);
+    showToast("🗑️ 心得已刪除");
+  } else {
+    alert("刪除失敗，請稍後再試：" + (result.error || ""));
+  }
+}
+
+
+// ---------- REVIEW FORM MODAL ----------
+function populateCourseSelect(){
+  const sel = document.getElementById('formCourse');
+  sel.innerHTML = courses.map(c=>`<option value="${c.id}">${c.name}（${c.teacher}）</option>`).join("");
+}
+
+function buildStarPicker(container, key){
+  container.innerHTML = "";
+  for(let i=1;i<=5;i++){
+    const s = document.createElement('span');
+    s.className = "star text-2xl";
+    s.textContent = "☆";
+    s.style.color = barColor(key);
+    s.dataset.value = i;
+    s.onclick = ()=>{
+      currentRating[key] = i;
+      updateStarPicker(key);
+    };
+    container.appendChild(s);
+  }
+}
+function updateStarPicker(key){
+  const container = document.querySelector(`[data-rating="${key}"]`);
+  const stars = container.querySelectorAll('.star');
+  stars.forEach(s=>{
+    s.textContent = parseInt(s.dataset.value) <= currentRating[key] ? "★" : "☆";
+  });
+  document.getElementById(key+'Label').textContent = currentRating[key] + "/5";
+}
+
+function setRecommend(value){
+  currentRecommend = value;
+  const yesBtn = document.getElementById('recommendYes');
+  const noBtn = document.getElementById('recommendNo');
+  yesBtn.className = "toggle-btn border rounded-lg py-3 text-sm font-semibold " + (value===true ? "border-[var(--mint)] bg-[var(--mint-soft)] text-[var(--mint)]" : "border-[var(--line)] text-[var(--muted)]");
+  noBtn.className = "toggle-btn border rounded-lg py-3 text-sm font-semibold " + (value===false ? "border-[var(--red)] bg-[var(--red-soft)] text-[var(--red)]" : "border-[var(--line)] text-[var(--muted)]");
+}
+document.getElementById('recommendYes').addEventListener('click', ()=> setRecommend(true));
+document.getElementById('recommendNo').addEventListener('click', ()=> setRecommend(false));
+
+function openReviewModal(){
+  populateCourseSelect();
+  currentRating = { sweet:0, easy:0, gain:0 };
+  currentRecommend = null;
+  ['sweet','easy','gain'].forEach(key=>{
+    buildStarPicker(document.querySelector(`[data-rating="${key}"]`), key);
+    document.getElementById(key+'Label').textContent = "0/5";
+  });
+  setRecommend(null);
+  document.getElementById('formComment').value = "";
+  showModal('reviewModal');
+}
+
+document.getElementById('reviewForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const courseId = parseInt(document.getElementById('formCourse').value);
+  const comment = document.getElementById('formComment').value.trim();
+  if(currentRating.sweet===0 || currentRating.easy===0 || currentRating.gain===0){
+    alert("請完成甜度／涼度／收穫度三項評分喔！");
+    return;
+  }
+  if(currentRecommend === null){
+    alert("請選擇是否推薦這門課給學弟妹！");
+    return;
+  }
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')}`;
+
+  const result = await postToSheet({
+    action: 'addReview',
+    courseId: courseId,
+    sweet: currentRating.sweet,
+    easy: currentRating.easy,
+    gain: currentRating.gain,
+    recommend: currentRecommend,
+    comment: comment,
+    date: dateStr
+  });
+
+  if(result.success){
+    closeModal('reviewModal');
+    await loadCoursesFromSheet();
+    showToast("✅ 心得送出成功！");
+    if(currentOpenCourseId === courseId){
+      openCourseModal(courseId);
+    }
+  } else {
+    alert("送出失敗，請稍後再試：" + (result.error || ""));
+  }
+});
+
+// ---------- ADD COURSE MODAL ----------
+function openAddCourseModal(){
+  document.getElementById('addCourseForm').reset();
+  showModal('addCourseModal');
+}
+
+document.getElementById('addCourseForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const type = document.getElementById('newCourseType').value;
+  const name = document.getElementById('newCourseName').value.trim();
+  const teacher = document.getElementById('newCourseTeacher').value.trim();
+  const examLink = document.getElementById('newCourseExam').value.trim();
+
+  if(name === "" || teacher === ""){
+    alert("請填寫課程名稱與教授姓名！");
+    return;
+  }
+
+  const duplicate = courses.some(c => c.name === name && c.teacher === teacher);
+  if(duplicate){
+    alert("這門課（含相同教授）已經存在資料庫中囉，直接搜尋看看吧！");
+    return;
+  }
+
+  const result = await postToSheet({
+    action: 'addCourse',
+    type: type,
+    name: name,
+    teacher: teacher,
+    examLink: examLink
+  });
+
+  if(result.success){
+    closeModal('addCourseModal');
+    await loadCoursesFromSheet();
+    showToast("✅ 課程新增成功，快來搶頭香寫心得！");
+  } else {
+    alert("新增失敗，請稍後再試：" + (result.error || ""));
+  }
+});
+
+// ---------- MODAL HELPERS ----------
+function showModal(id){
+  const el = document.getElementById(id);
+  el.classList.remove('hidden');
+  el.classList.add('flex');
+}
+function closeModal(id){
+  const el = document.getElementById(id);
+  el.classList.add('hidden');
+  el.classList.remove('flex');
+}
+function showToast(message){
+  const t = document.getElementById('toast');
+  t.textContent = message || "✅ 操作成功！";
+  t.classList.remove('hidden');
+  setTimeout(()=> t.classList.add('hidden'), 2400);
+}
+
+// ---------- EVENTS ----------
+document.getElementById('searchInput').addEventListener('input', (e)=>{
+  currentSearch = e.target.value;
+  renderCourses();
+});
+
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    currentFilter = btn.dataset.filter;
+    document.querySelectorAll('.filter-btn').forEach(b=>{
+      b.classList.remove('bg-[var(--mint)]','text-white','border-[var(--mint)]','font-semibold');
+      b.classList.add('border-[var(--line)]','text-[var(--muted)]');
+    });
+    btn.classList.add('bg-[var(--mint)]','text-white','border-[var(--mint)]','font-semibold');
+    btn.classList.remove('border-[var(--line)]','text-[var(--muted)]');
+    renderCourses();
+  });
+});
+
+// click backdrop to close
+['courseModal','reviewModal','addCourseModal'].forEach(id=>{
+  document.getElementById(id).addEventListener('click', function(e){
+    if(e.target === this) closeModal(id);
+  });
+});
+
+// ---------- INIT ----------
+loadCoursesFromSheet();
+</script>
+</body>
+</html>
