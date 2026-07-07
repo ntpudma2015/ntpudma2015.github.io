@@ -83,6 +83,9 @@
       </div>
     </div>
     <div class="flex items-center gap-2">
+      <button onclick="openChangelogModal()" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)] flex items-center gap-1.5">
+        🗂️ 更新紀錄
+      </button>
       <button id="viewToggleBtn" onclick="toggleViewMode()" title="切換電腦版／手機版預覽" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)] flex items-center gap-1.5">
         📱 手機預覽
       </button>
@@ -203,6 +206,17 @@
   </div>
 </div>
 
+<!-- CHANGELOG MODAL -->
+<div id="changelogModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
+  <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col shadow-xl">
+    <div class="p-5 border-b border-[var(--line)] flex items-center justify-between">
+      <h2 class="font-display font-bold text-lg text-[var(--text)]">更新紀錄</h2>
+      <button onclick="closeModal('changelogModal')" class="text-[var(--muted)] hover:text-[var(--text)] text-2xl leading-none">&times;</button>
+    </div>
+    <div id="changelogList" class="p-5 overflow-y-auto scrollbar-thin flex-1 space-y-5"></div>
+  </div>
+</div>
+
 <!-- ADD COURSE MODAL -->
 <div id="addCourseModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
   <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-md shadow-xl">
@@ -268,6 +282,63 @@
 // ---------- 從 Google Sheets 讀取真實資料 ----------
 // ⚠️ 請把下面這行換成你自己部署 GAS 網頁應用程式後拿到的網址
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxLA3GGZmqqhIU08Kj98G_pO3B3jhGIZkp7G_TTbNWJtjQ7Fv84sRlkB194RPhlWJuk/exec";
+
+// ---------- 更新紀錄 ----------
+// 每次新增/調整功能時會自動在最上面補一筆，最新的版本永遠排在最前面
+const changelogEntries = [
+  { version: "v1.6", items: [
+    "課程列表改為依推薦指數由高到低排序",
+    "撰寫心得的課程選單改為依教授姓名分組，方便找老師",
+    "網站標題更新為「國立臺北大學數位行銷修課分享網」"
+  ]},
+  { version: "v1.5", items: [
+    "新增「送出中」鎖定機制，避免連續點擊造成重複留言",
+    "發文時間改為精確到「年/月/日 時:分」"
+  ]},
+  { version: "v1.4", items: [
+    "新增 ❤️ 按讚功能，需登入 Google 帳號才能按讚，防止重複洗讚",
+    "推薦欄位從「推薦／不推薦」擴充為「推薦／普通／不推薦」三選一",
+    "心得列表依讚數由高到低排序"
+  ]},
+  { version: "v1.3", items: [
+    "管理員模式改為 Google 帳號登入 + 後端白名單驗證",
+    "管理員可編輯／刪除不當心得",
+    "管理員可編輯課程名稱、授課教師",
+    "管理員可刪除整門課程（連帶清除底下所有心得）"
+  ]},
+  { version: "v1.2", items: [
+    "匯入 114 學年度全系 29 門真實課程",
+    "新增「通識」課程類別",
+    "同學可自行新增資料庫沒有的課程"
+  ]},
+  { version: "v1.1", items: [
+    "改為亮色主題，視覺更清爽",
+    "新增「推薦指數」圓環顯示"
+  ]},
+  { version: "v1.0", items: [
+    "初版原型上線：搜尋、必修/選修/通識篩選、課程卡片評分、心得彈出視窗、撰寫心得表單"
+  ]}
+];
+
+function renderChangelog(){
+  const list = document.getElementById('changelogList');
+  list.innerHTML = changelogEntries.map((entry, idx) => `
+    <div>
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-[10px] font-mono px-2 py-1 rounded-full ${idx===0 ? 'bg-[var(--mint-soft)] text-[var(--mint)]' : 'bg-[var(--surface-2)] text-[var(--muted)]'}">${entry.version}</span>
+        ${idx===0 ? '<span class="text-[10px] font-mono text-[var(--mint)]">最新</span>' : ''}
+      </div>
+      <ul class="space-y-1.5">
+        ${entry.items.map(item => `<li class="text-sm text-[var(--text)] flex gap-2"><span class="text-[var(--muted)]">•</span><span>${item}</span></li>`).join('')}
+      </ul>
+    </div>
+  `).join('<div class="border-t border-[var(--line)]"></div>');
+}
+
+function openChangelogModal(){
+  renderChangelog();
+  showModal('changelogModal');
+}
 
 let courses = [];
 
@@ -916,7 +987,7 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
 });
 
 // click backdrop to close
-['courseModal','reviewModal','addCourseModal','adminLoginModal','likeLoginModal'].forEach(id=>{
+['courseModal','reviewModal','addCourseModal','adminLoginModal','likeLoginModal','changelogModal'].forEach(id=>{
   document.getElementById(id).addEventListener('click', function(e){
     if(e.target === this) closeModal(id);
   });
