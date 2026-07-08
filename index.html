@@ -218,7 +218,7 @@
       </div>
     </div>
 
-    <div class="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-3 border-b border-[var(--line)]" id="modalStats"></div>
+    <div class="px-5 py-4 space-y-2.5 border-b border-[var(--line)]" id="modalStats"></div>
 
     <div class="p-5 overflow-y-auto scrollbar-thin flex-1 space-y-3" id="modalReviews"></div>
   </div>
@@ -789,17 +789,26 @@ function openCourseModal(id){
   deleteCourseBtn.onclick = () => deleteCourse(c.id, c.name);
 
   document.getElementById('modalStats').innerHTML = `
-    <div class="text-center">
-      <p class="text-xl sm:text-2xl font-display font-bold" style="color:${hasData?'var(--amber)':'var(--line)'}">${starString(sweet)}</p>
-      <p class="text-[10px] font-mono text-[var(--muted)] mt-1">甜度 ${hasData?sweet.toFixed(1):'－'}</p>
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-mono text-[var(--muted)]">🍯 甜度</span>
+      <span class="flex items-center gap-2">
+        <span class="text-base tracking-tight" style="color:${hasData?'var(--amber)':'var(--line)'}">${starString(sweet)}</span>
+        <span class="text-xs font-mono font-semibold w-7 text-right" style="color:${hasData?'var(--amber)':'var(--muted)'}">${hasData?sweet.toFixed(1):'－'}</span>
+      </span>
     </div>
-    <div class="text-center">
-      <p class="text-xl sm:text-2xl font-display font-bold" style="color:${hasData?'var(--cyan)':'var(--line)'}">${starString(easy)}</p>
-      <p class="text-[10px] font-mono text-[var(--muted)] mt-1">涼度 ${hasData?easy.toFixed(1):'－'}</p>
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-mono text-[var(--muted)]">🧊 涼度</span>
+      <span class="flex items-center gap-2">
+        <span class="text-base tracking-tight" style="color:${hasData?'var(--cyan)':'var(--line)'}">${starString(easy)}</span>
+        <span class="text-xs font-mono font-semibold w-7 text-right" style="color:${hasData?'var(--cyan)':'var(--muted)'}">${hasData?easy.toFixed(1):'－'}</span>
+      </span>
     </div>
-    <div class="text-center">
-      <p class="text-xl sm:text-2xl font-display font-bold" style="color:${hasData?'var(--mint)':'var(--line)'}">${starString(gain)}</p>
-      <p class="text-[10px] font-mono text-[var(--muted)] mt-1">收穫度 ${hasData?gain.toFixed(1):'－'}</p>
+    <div class="flex items-center justify-between">
+      <span class="text-xs font-mono text-[var(--muted)]">📈 收穫度</span>
+      <span class="flex items-center gap-2">
+        <span class="text-base tracking-tight" style="color:${hasData?'var(--mint)':'var(--line)'}">${starString(gain)}</span>
+        <span class="text-xs font-mono font-semibold w-7 text-right" style="color:${hasData?'var(--mint)':'var(--muted)'}">${hasData?gain.toFixed(1):'－'}</span>
+      </span>
     </div>
   `;
 
