@@ -239,7 +239,13 @@
 
       <div>
         <label class="block text-xs font-mono text-[var(--muted)] mb-1.5">修課學期</label>
-        <select id="formSemester" required class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm"></select>
+        <div class="grid grid-cols-2 gap-3">
+          <select id="formYear" required class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm"></select>
+          <select id="formTerm" required class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm">
+            <option value="上">上學期</option>
+            <option value="下">下學期</option>
+          </select>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 gap-4">
@@ -1366,17 +1372,26 @@ document.getElementById('recommendYes').addEventListener('click', ()=> setRecomm
 document.getElementById('recommendNeutral').addEventListener('click', ()=> setRecommend('普通'));
 document.getElementById('recommendNo').addEventListener('click', ()=> setRecommend('不推薦'));
 
-// 動態產生修課學期選項：以西元年換算民國學年度（西元年 - 1911），
-// 自動往前推 5 個學年度、往後留 1 個學年度緩衝，每年都會自動延伸，不用手動改程式碼
+// 動態產生修課學期選項：以西元年換算民國學年度（西元年 - 1911）
+// 拆成「學年度」跟「上/下學期」兩個短選單，選項少、好選；並自動預選當下最可能的學期
 function populateSemesterSelect(){
-  const sel = document.getElementById('formSemester');
-  const nowROC = new Date().getFullYear() - 1911;
-  let options = `<option value="" disabled selected>請選擇修課學期</option>`;
-  for(let y = nowROC + 1; y >= nowROC - 5; y--){
-    options += `<option value="${y}上">${y}學年度上學期</option>`;
-    options += `<option value="${y}下">${y}學年度下學期</option>`;
+  const now = new Date();
+  const nowROC = now.getFullYear() - 1911;
+  const month = now.getMonth() + 1; // 1~12
+  // 台灣學制：8月~次年1月是上學期，2月~7月是下學期
+  const currentTerm = (month >= 8 || month <= 1) ? '上' : '下';
+  // 學年度：8月~12月直接對應當年民國年；1月~7月都還算「前一個」學年度
+  // （例如 2026年7月，還是 114 學年度下學期；2026年9月才進入 115 學年度上學期）
+  const currentYear = (month >= 8) ? nowROC : nowROC - 1;
+
+  const yearSel = document.getElementById('formYear');
+  let yearOptions = '';
+  for(let y = currentYear + 1; y >= currentYear - 3; y--){
+    yearOptions += `<option value="${y}" ${y===currentYear ? 'selected' : ''}>${y}學年度</option>`;
   }
-  sel.innerHTML = options;
+  yearSel.innerHTML = yearOptions;
+
+  document.getElementById('formTerm').value = currentTerm;
 }
 
 function openReviewModal(){
@@ -1390,7 +1405,6 @@ function openReviewModal(){
   });
   setRecommend(null);
   document.getElementById('formComment').value = "";
-  document.getElementById('formSemester').value = "";
   showModal('reviewModal');
 }
 
@@ -1401,7 +1415,7 @@ document.getElementById('reviewForm').addEventListener('submit', async function(
   if(isSubmittingReview) return; // 防止連續點擊造成重複送出
 
   const courseId = parseInt(document.getElementById('formCourse').value);
-  const semester = document.getElementById('formSemester').value;
+  const semester = document.getElementById('formYear').value + document.getElementById('formTerm').value;
   const comment = document.getElementById('formComment').value.trim();
   if(currentRating.sweet===0 || currentRating.easy===0 || currentRating.gain===0){
     alert("請完成甜度／涼度／收穫度三項評分喔！");
