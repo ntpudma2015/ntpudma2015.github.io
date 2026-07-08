@@ -2,8 +2,19 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>國立臺北大學數位行銷修課分享網</title>
+
+<!-- PWA：讓同學可以「加入主畫面」，像 App 一樣使用 -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0EA678">
+<!-- iOS Safari 專用的加入主畫面設定（Safari 不吃 manifest.json，要另外寫這幾行） -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="修課分享網">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -423,6 +434,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxLA3GGZmqqhIU08Kj98G_p
 // ---------- 更新紀錄 ----------
 // 每次新增/調整功能時會自動在最上面補一筆，最新的版本永遠排在最前面
 const changelogEntries = [
+  { version: "v3.0", items: [
+    "支援加入主畫面（PWA）：手機瀏覽器可以把網站加到主畫面，像 App 一樣有獨立圖示、全螢幕開啟"
+  ]},
   { version: "v2.9", items: [
     "課程詳情視窗的評分星星在手機版改為上下堆疊顯示，避免視覺上擠在一起",
     "移除按讚功能，心得列表改回依發文時間新到舊排序"
@@ -1533,6 +1547,16 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
 // ---------- INIT ----------
 loadCoursesFromSheet();
 window.addEventListener('load', initGoogleSignIn);
+
+// 註冊 PWA 的 Service Worker（主要是讓 Android/Chrome 願意顯示「加入主畫面」的安裝提示；
+// iOS Safari 不需要這個也能加入主畫面，這裡加上是為了兩邊都照顧到）
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => {
+      console.error('Service Worker 註冊失敗：', err);
+    });
+  });
+}
 </script>
 </body>
 </html>
