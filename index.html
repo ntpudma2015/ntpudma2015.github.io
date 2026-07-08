@@ -144,7 +144,7 @@
       <div class="min-w-0">
         <p class="font-display font-bold text-lg leading-none text-[var(--text)]">國立臺北大學數位行銷修課分享網</p>
         <div id="headerCredit">
-          <p class="text-[11px] text-[var(--muted)] mt-1 leading-snug">由 數位行銷 10TH 學會會長 Carlie LIN 製作，願每位同學都能選其所愛、愛其所選。</p>
+          <p class="text-[11px] text-[var(--muted)] mt-1 leading-snug">由 數位行銷第十屆學會會長 Carlie LIN 製作，願每位同學都能選其所愛、愛其所選。</p>
           <p class="text-[9px] text-[var(--muted)]/60 font-mono tracking-wide mt-0.5">BUILT WITH ❤ BY NTPU DMA 10TH STUDENT ASSOCIATION</p>
         </div>
       </div>
@@ -172,6 +172,7 @@
             <button onclick="openReportedReviewsModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🚩 檢舉列表</button>
             <button onclick="openFeedbackInboxModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">📮 意見信箱</button>
             <button onclick="openAdminLogsModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">📋 登入紀錄</button>
+            <button onclick="openAdminActionLogsModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">📜 操作紀錄</button>
           </div>
         </div>
       </div>
@@ -330,6 +331,20 @@
       </div>
       <button type="submit" id="feedbackSubmitBtn" class="w-full font-display font-semibold bg-[var(--cyan)] text-white py-3 rounded-lg hover:brightness-110 active:scale-95 transition">送出意見</button>
     </form>
+  </div>
+</div>
+
+<!-- ADMIN ACTION LOGS MODAL (管理員專用) -->
+<div id="adminActionLogsModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
+  <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col shadow-xl">
+    <div class="p-5 border-b border-[var(--line)] flex items-center justify-between">
+      <div>
+        <h2 class="font-display font-bold text-lg text-[var(--text)]">📜 操作紀錄</h2>
+        <p class="text-xs text-[var(--muted)] font-mono mt-0.5">最近 50 筆管理員操作行為</p>
+      </div>
+      <button onclick="closeModal('adminActionLogsModal')" class="text-[var(--muted)] hover:text-[var(--text)] text-2xl leading-none">&times;</button>
+    </div>
+    <div id="adminActionLogsList" class="p-5 overflow-y-auto scrollbar-thin flex-1 space-y-2"></div>
   </div>
 </div>
 
@@ -682,6 +697,7 @@ document.addEventListener('click', function(e){
 let courses = [];
 let feedbackList = [];
 let adminLogs = [];
+let adminActionLogs = [];
 
 async function loadCoursesFromSheet(){
   try {
@@ -703,6 +719,7 @@ async function loadCoursesFromSheet(){
       courses = data.courses;
       feedbackList = data.feedbackList || [];
       adminLogs = data.adminLogs || [];
+      adminActionLogs = data.adminActionLogs || [];
       // 管理員身分完全以後端這次回傳的結果為準，前端不再自行假設
       if(currentIdToken){
         isAdminMode = !!data.isAdmin;
@@ -1098,6 +1115,29 @@ function renderAdminLogs(){
         <p class="text-[10px] font-mono text-[var(--muted)] mt-0.5">${log.date} · ${log.device} · IP: ${log.ip || '未知'}</p>
       </div>
       <span class="text-[10px] font-mono px-2 py-1 rounded-full shrink-0 ${log.result === '成功登入' ? 'bg-[var(--mint-soft)] text-[var(--mint)]' : 'bg-[var(--red-soft)] text-[var(--red)]'}">${log.result}</span>
+    </div>
+  `).join("");
+}
+
+function openAdminActionLogsModal(){
+  renderAdminActionLogs();
+  showModal('adminActionLogsModal');
+}
+
+function renderAdminActionLogs(){
+  const listEl = document.getElementById('adminActionLogsList');
+  if(adminActionLogs.length === 0){
+    listEl.innerHTML = `<p class="text-center text-sm font-mono text-[var(--muted)] py-8">目前沒有操作紀錄</p>`;
+    return;
+  }
+  listEl.innerHTML = adminActionLogs.map(log => `
+    <div class="bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-4 py-2.5">
+      <div class="flex items-center justify-between gap-3">
+        <span class="text-xs font-mono font-semibold text-[var(--indigo)]">${log.action}</span>
+        <span class="text-[10px] font-mono text-[var(--muted)]">${log.date}</span>
+      </div>
+      <p class="text-xs text-[var(--text)] mt-1">${log.email}</p>
+      <p class="text-[10px] font-mono text-[var(--muted)] mt-0.5">${log.detail}</p>
     </div>
   `).join("");
 }
@@ -1619,7 +1659,7 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
 });
 
 // click backdrop to close
-['courseModal','reviewModal','addCourseModal','adminLoginModal','changelogModal','latestReviewsModal','reportedReviewsModal','feedbackModal','feedbackInboxModal','adminLogsModal','installGuideModal'].forEach(id=>{
+['courseModal','reviewModal','addCourseModal','adminLoginModal','changelogModal','latestReviewsModal','reportedReviewsModal','feedbackModal','feedbackInboxModal','adminLogsModal','adminActionLogsModal','installGuideModal'].forEach(id=>{
   document.getElementById(id).addEventListener('click', function(e){
     if(e.target === this) closeModal(id);
   });
