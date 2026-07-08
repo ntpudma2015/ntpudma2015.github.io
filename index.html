@@ -150,8 +150,8 @@
       </div>
     </div>
     <div class="flex items-center flex-wrap gap-2 justify-end">
-      <button onclick="openFeedbackModal()" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--cyan)] hover:text-[var(--cyan)] flex items-center gap-1.5">
-        💬 意見回饋
+      <button id="viewToggleBtn" onclick="toggleViewMode()" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)] flex items-center gap-1.5">
+        📱 手機預覽
       </button>
       <button onclick="openInstallGuideModal()" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)] flex items-center gap-1.5">
         📲 加入主畫面
@@ -162,7 +162,7 @@
           ⚙️
         </button>
         <div id="settingsMenu" class="dropdown-menu hidden w-52 bg-[var(--surface)] border border-[var(--line)] rounded-xl shadow-xl py-1.5 z-50">
-          <button id="viewToggleBtn" onclick="toggleViewMode(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">📱 手機預覽</button>
+          <button onclick="openFeedbackModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">💬 意見回饋</button>
           <button onclick="openChangelogModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🗂️ 更新紀錄</button>
           <div class="my-1 border-t border-[var(--line)]"></div>
           <button id="adminToggleBtn" onclick="toggleAdminMode()" title="原型示範用，正式上線需改為後端驗證" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🔒 管理模式</button>
