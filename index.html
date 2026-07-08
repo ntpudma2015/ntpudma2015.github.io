@@ -150,11 +150,9 @@
       </div>
     </div>
     <div class="flex items-center flex-wrap gap-2 justify-end">
-      <div class="flex items-center gap-1 bg-[var(--surface-2)] border border-[var(--line)] rounded-lg p-1">
-        <button id="previewBtn_desktop" onclick="setPreviewMode('desktop')" title="電腦版預覽" class="px-2.5 py-1.5 rounded-md text-xs font-mono">💻</button>
-        <button id="previewBtn_tablet" onclick="setPreviewMode('tablet')" title="平板版預覽" class="px-2.5 py-1.5 rounded-md text-xs font-mono">📔</button>
-        <button id="previewBtn_mobile" onclick="setPreviewMode('mobile')" title="手機版預覽" class="px-2.5 py-1.5 rounded-md text-xs font-mono">📱</button>
-      </div>
+      <button onclick="openFeedbackModal()" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--cyan)] hover:text-[var(--cyan)] flex items-center gap-1.5">
+        💬 意見回饋
+      </button>
       <button onclick="openInstallGuideModal()" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)] flex items-center gap-1.5">
         📲 加入主畫面
       </button>
@@ -164,7 +162,6 @@
           ⚙️
         </button>
         <div id="settingsMenu" class="dropdown-menu hidden w-52 bg-[var(--surface)] border border-[var(--line)] rounded-xl shadow-xl py-1.5 z-50">
-          <button onclick="openFeedbackModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">💬 意見回饋</button>
           <button onclick="openChangelogModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🗂️ 更新紀錄</button>
           <div class="my-1 border-t border-[var(--line)]"></div>
           <button id="adminToggleBtn" onclick="toggleAdminMode()" title="原型示範用，正式上線需改為後端驗證" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🔒 管理模式</button>
@@ -461,7 +458,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxLA3GGZmqqhIU08Kj98G_p
 // 每次新增/調整功能時會自動在最上面補一筆，最新的版本永遠排在最前面
 const changelogEntries = [
   { version: "v3.3", items: [
-    "預覽模式新增「平板」尺寸，跟電腦版/手機版一樣可以直接在頁首切換查看"
+    "移除電腦/手機預覽切換功能，因為網站本身已能自動依裝置螢幕寬度顯示對應版面"
   ]},
   { version: "v3.2", items: [
     "⚙️ 選單新增「加入主畫面教學」，隨時可以查看圖文步驟，不用等提示橫幅跳出來"
@@ -737,66 +734,6 @@ let currentRating = { sweet:0, easy:0, gain:0 };
 let currentRecommend = null;
 let currentOpenCourseId = null;
 let isAdminMode = false;
-let previewMode = 'desktop'; // 'desktop' | 'tablet' | 'mobile'
-
-// ---------- 電腦／平板／手機 預覽切換 ----------
-function setPreviewMode(mode){
-  previewMode = mode;
-  const wrapper = document.getElementById('appWrapper');
-  const grid = document.getElementById('courseGrid');
-  const heroTitle = document.getElementById('heroTitle');
-  const credit = document.getElementById('headerCredit');
-
-  if(mode === 'mobile'){
-    wrapper.style.maxWidth = '430px';
-    wrapper.style.border = '1px solid var(--line)';
-    wrapper.style.borderRadius = '28px';
-    wrapper.style.boxShadow = '0 24px 60px -24px rgba(28,35,51,0.35)';
-    wrapper.style.marginTop = '24px';
-    wrapper.style.marginBottom = '24px';
-    // 強制單欄排版：因為 md:/lg: 是依真實瀏覽器寬度判斷，縮小容器並不會觸發，
-    // 所以用行內樣式直接蓋過，避免卡片被硬擠成三欄而跑版
-    grid.style.gridTemplateColumns = '1fr';
-    heroTitle.style.fontSize = '1.5rem';
-    // 手機版空間有限，先隱藏頁首的製作單位副標題，避免長句子擠壓跑版
-    if(credit) credit.style.display = 'none';
-  } else if(mode === 'tablet'){
-    wrapper.style.maxWidth = '820px';
-    wrapper.style.border = '1px solid var(--line)';
-    wrapper.style.borderRadius = '20px';
-    wrapper.style.boxShadow = '0 24px 60px -24px rgba(28,35,51,0.3)';
-    wrapper.style.marginTop = '24px';
-    wrapper.style.marginBottom = '24px';
-    // 平板寬度用兩欄排版比較合適，同樣用行內樣式強制蓋過
-    grid.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
-    heroTitle.style.fontSize = '';
-    if(credit) credit.style.display = '';
-  } else {
-    wrapper.style.maxWidth = '100%';
-    wrapper.style.border = 'none';
-    wrapper.style.borderRadius = '0';
-    wrapper.style.boxShadow = 'none';
-    wrapper.style.marginTop = '0';
-    wrapper.style.marginBottom = '0';
-    grid.style.gridTemplateColumns = '';
-    heroTitle.style.fontSize = '';
-    if(credit) credit.style.display = '';
-  }
-
-  updatePreviewButtonUI();
-}
-
-function updatePreviewButtonUI(){
-  ['desktop','tablet','mobile'].forEach(m => {
-    const btn = document.getElementById('previewBtn_' + m);
-    if(!btn) return;
-    if(m === previewMode){
-      btn.className = "flex-1 text-center py-1.5 rounded-md text-xs font-mono font-semibold bg-[var(--mint)] text-white";
-    } else {
-      btn.className = "flex-1 text-center py-1.5 rounded-md text-xs font-mono text-[var(--muted)] hover:text-[var(--text)]";
-    }
-  });
-}
 
 // ---------- HELPERS ----------
 function avg(reviews, key){
@@ -1691,7 +1628,6 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
 // ---------- INIT ----------
 loadCoursesFromSheet();
 window.addEventListener('load', initGoogleSignIn);
-updatePreviewButtonUI();
 initInstallBanner();
 
 // 註冊 PWA 的 Service Worker（主要是讓 Android/Chrome 願意顯示「加入主畫面」的安裝提示；
