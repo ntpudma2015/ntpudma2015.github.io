@@ -148,6 +148,7 @@
             <button onclick="openLatestReviewsModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🆕 最新心得</button>
             <button onclick="openReportedReviewsModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🚩 檢舉列表</button>
             <button onclick="openFeedbackInboxModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">📮 意見信箱</button>
+            <button onclick="openAdminLogsModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">📋 登入紀錄</button>
           </div>
         </div>
       </div>
@@ -295,6 +296,20 @@
       </div>
       <button type="submit" id="feedbackSubmitBtn" class="w-full font-display font-semibold bg-[var(--cyan)] text-white py-3 rounded-lg hover:brightness-110 active:scale-95 transition">送出意見</button>
     </form>
+  </div>
+</div>
+
+<!-- ADMIN LOGS MODAL (管理員專用) -->
+<div id="adminLogsModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
+  <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col shadow-xl">
+    <div class="p-5 border-b border-[var(--line)] flex items-center justify-between">
+      <div>
+        <h2 class="font-display font-bold text-lg text-[var(--text)]">📋 登入紀錄</h2>
+        <p class="text-xs text-[var(--muted)] font-mono mt-0.5">最近 50 筆管理模式登入嘗試（含被拒絕的）</p>
+      </div>
+      <button onclick="closeModal('adminLogsModal')" class="text-[var(--muted)] hover:text-[var(--text)] text-2xl leading-none">&times;</button>
+    </div>
+    <div id="adminLogsList" class="p-5 overflow-y-auto scrollbar-thin flex-1 space-y-2"></div>
   </div>
 </div>
 
@@ -526,6 +541,7 @@ document.addEventListener('click', function(e){
 
 let courses = [];
 let feedbackList = [];
+let adminLogs = [];
 
 async function loadCoursesFromSheet(){
   try {
@@ -546,6 +562,7 @@ async function loadCoursesFromSheet(){
     if(data.success){
       courses = data.courses;
       feedbackList = data.feedbackList || [];
+      adminLogs = data.adminLogs || [];
       // 管理員身分完全以後端這次回傳的結果為準，前端不再自行假設
       if(currentIdToken){
         isAdminMode = !!data.isAdmin;
@@ -849,6 +866,18 @@ function updateAdminButtonUI(){
   }
 }
 
+async function logAdminLoginAttempt(){
+  try {
+    const ip = await getVisitorIp();
+    const device = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? '手機' : '電腦';
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')} ${String(today.getHours()).padStart(2,'0')}:${String(today.getMinutes()).padStart(2,'0')}`;
+    await postToSheet({ action:'logAdminLogin', idToken: currentIdToken, ip: ip, device: device, date: dateStr });
+  } catch(err){
+    console.error("登入紀錄回報失敗：", err);
+  }
+}
+
 async function handleCredentialResponse(response){
   currentIdToken = response.credential;
 
@@ -857,6 +886,7 @@ async function handleCredentialResponse(response){
     // 這裡不再自己假設登入成功＝管理員，而是讓 loadCoursesFromSheet 內部
     // 把 idToken 送給後端驗證，isAdminMode 會依照伺服器回傳的 isAdmin 結果來設定
     await loadCoursesFromSheet();
+    logAdminLoginAttempt(); // 不管成功或被拒絕，都記錄這次登入嘗試
     if(isAdminMode){
       showToast("✅ 已登入管理模式");
     } else {
@@ -947,6 +977,28 @@ document.getElementById('feedbackForm').addEventListener('submit', async functio
     submitBtn.textContent = "送出意見";
   }
 });
+
+function openAdminLogsModal(){
+  renderAdminLogs();
+  showModal('adminLogsModal');
+}
+
+function renderAdminLogs(){
+  const listEl = document.getElementById('adminLogsList');
+  if(adminLogs.length === 0){
+    listEl.innerHTML = `<p class="text-center text-sm font-mono text-[var(--muted)] py-8">目前沒有登入紀錄</p>`;
+    return;
+  }
+  listEl.innerHTML = adminLogs.map(log => `
+    <div class="flex items-center justify-between gap-3 bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-4 py-2.5">
+      <div class="min-w-0">
+        <p class="text-sm text-[var(--text)] truncate">${log.email}</p>
+        <p class="text-[10px] font-mono text-[var(--muted)] mt-0.5">${log.date} · ${log.device} · IP: ${log.ip || '未知'}</p>
+      </div>
+      <span class="text-[10px] font-mono px-2 py-1 rounded-full shrink-0 ${log.result === '成功登入' ? 'bg-[var(--mint-soft)] text-[var(--mint)]' : 'bg-[var(--red-soft)] text-[var(--red)]'}">${log.result}</span>
+    </div>
+  `).join("");
+}
 
 function openFeedbackInboxModal(){
   renderFeedbackInbox();
@@ -1466,7 +1518,7 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
 });
 
 // click backdrop to close
-['courseModal','reviewModal','addCourseModal','adminLoginModal','likeLoginModal','changelogModal','latestReviewsModal','reportedReviewsModal','feedbackModal','feedbackInboxModal'].forEach(id=>{
+['courseModal','reviewModal','addCourseModal','adminLoginModal','likeLoginModal','changelogModal','latestReviewsModal','reportedReviewsModal','feedbackModal','feedbackInboxModal','adminLogsModal'].forEach(id=>{
   document.getElementById(id).addEventListener('click', function(e){
     if(e.target === this) closeModal(id);
   });
