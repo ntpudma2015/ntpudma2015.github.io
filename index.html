@@ -25,6 +25,43 @@
     --red: #DC4C4C;
     --red-soft: #FDECEC;
   }
+
+  /* 管理員模式：深色主題，方便一眼辨識目前是不是在管理員身分下操作 */
+  body.admin-dark{
+    --bg: #0B0F1A;
+    --surface: #151B2B;
+    --surface-2: #1E2740;
+    --line: #2A3350;
+    --text: #E8ECF5;
+    --muted: #8792AA;
+    --mint: #22D3A6;
+    --mint-soft: rgba(34,211,166,0.15);
+    --indigo: #818CF8;
+    --indigo-soft: rgba(129,140,248,0.15);
+    --amber: #FBBF24;
+    --cyan: #22D3EE;
+    --red: #F87171;
+    --red-soft: rgba(248,113,113,0.15);
+  }
+  body.admin-dark{
+    background-image:
+      radial-gradient(circle at 12% 0%, rgba(129,140,248,0.12), transparent 40%),
+      radial-gradient(circle at 88% 15%, rgba(34,211,166,0.12), transparent 35%),
+      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+  }
+  body.admin-dark::before{
+    content:"🔓 管理模式";
+    display:block;
+    text-align:center;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    letter-spacing:0.1em;
+    padding:3px 0;
+    background:#818CF8;
+    color:#0B0F1A;
+    font-weight:600;
+  }
   *{ font-family:'Noto Sans TC','Space Grotesk',sans-serif; }
   .font-display{ font-family:'Space Grotesk','Noto Sans TC',sans-serif; letter-spacing:-0.01em; }
   .font-mono{ font-family:'JetBrains Mono',monospace; }
@@ -801,6 +838,7 @@ function initGoogleSignIn(){
 function updateAdminButtonUI(){
   const btn = document.getElementById('adminToggleBtn');
   const adminToolsSection = document.getElementById('adminToolsSection');
+  document.body.classList.toggle('admin-dark', isAdminMode);
   if(isAdminMode){
     btn.textContent = "🔓 登出管理模式";
     if(adminToolsSection) adminToolsSection.classList.remove('hidden');
