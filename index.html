@@ -218,7 +218,7 @@
       </div>
     </div>
 
-    <div class="p-5 grid grid-cols-3 gap-3 border-b border-[var(--line)]" id="modalStats"></div>
+    <div class="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-3 border-b border-[var(--line)]" id="modalStats"></div>
 
     <div class="p-5 overflow-y-auto scrollbar-thin flex-1 space-y-3" id="modalReviews"></div>
   </div>
@@ -400,16 +400,6 @@
   </div>
 </div>
 
-<!-- LIKE LOGIN MODAL -->
-<div id="likeLoginModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
-  <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-sm shadow-xl p-6 text-center">
-    <h2 class="font-display font-bold text-lg text-[var(--text)] mb-2">登入才能按讚</h2>
-    <p class="text-xs text-[var(--muted)] font-mono mb-5">用 Google 帳號登入一下，防止有人重複按讚</p>
-    <div id="likeGoogleSignInButton" class="flex justify-center"></div>
-    <button onclick="closeModal('likeLoginModal')" class="mt-5 text-xs font-mono text-[var(--muted)] hover:text-[var(--text)]">取消</button>
-  </div>
-</div>
-
 <!-- ADMIN LOGIN MODAL -->
 <div id="adminLoginModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
   <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-sm shadow-xl p-6 text-center">
@@ -433,6 +423,10 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxLA3GGZmqqhIU08Kj98G_p
 // ---------- 更新紀錄 ----------
 // 每次新增/調整功能時會自動在最上面補一筆，最新的版本永遠排在最前面
 const changelogEntries = [
+  { version: "v2.9", items: [
+    "課程詳情視窗的評分星星在手機版改為上下堆疊顯示，避免視覺上擠在一起",
+    "移除按讚功能，心得列表改回依發文時間新到舊排序"
+  ]},
   { version: "v2.8", items: [
     "撰寫心得新增「修課學期」欄位，選項會依目前日期自動往前延伸，不侷限固定範圍"
   ]},
@@ -796,15 +790,15 @@ function openCourseModal(id){
 
   document.getElementById('modalStats').innerHTML = `
     <div class="text-center">
-      <p class="text-2xl font-display font-bold" style="color:${hasData?'var(--amber)':'var(--line)'}">${starString(sweet)}</p>
+      <p class="text-xl sm:text-2xl font-display font-bold" style="color:${hasData?'var(--amber)':'var(--line)'}">${starString(sweet)}</p>
       <p class="text-[10px] font-mono text-[var(--muted)] mt-1">甜度 ${hasData?sweet.toFixed(1):'－'}</p>
     </div>
     <div class="text-center">
-      <p class="text-2xl font-display font-bold" style="color:${hasData?'var(--cyan)':'var(--line)'}">${starString(easy)}</p>
+      <p class="text-xl sm:text-2xl font-display font-bold" style="color:${hasData?'var(--cyan)':'var(--line)'}">${starString(easy)}</p>
       <p class="text-[10px] font-mono text-[var(--muted)] mt-1">涼度 ${hasData?easy.toFixed(1):'－'}</p>
     </div>
     <div class="text-center">
-      <p class="text-2xl font-display font-bold" style="color:${hasData?'var(--mint)':'var(--line)'}">${starString(gain)}</p>
+      <p class="text-xl sm:text-2xl font-display font-bold" style="color:${hasData?'var(--mint)':'var(--line)'}">${starString(gain)}</p>
       <p class="text-[10px] font-mono text-[var(--muted)] mt-1">收穫度 ${hasData?gain.toFixed(1):'－'}</p>
     </div>
   `;
@@ -815,7 +809,7 @@ function openCourseModal(id){
   if(!hasData){
     reviewsEl.innerHTML = `<p class="text-center text-sm font-mono text-[var(--muted)] py-8">目前還沒有心得留言，成為第一位分享經驗的同學吧！</p>`;
   } else {
-    reviewsEl.innerHTML = c.reviews.slice().sort((a,b) => (b.likes||0) - (a.likes||0)).map((r, idx)=>`
+    reviewsEl.innerHTML = c.reviews.slice().sort((a,b) => b.reviewId - a.reviewId).map((r, idx)=>`
       <div class="bg-[var(--surface-2)] border border-[var(--line)] rounded-lg p-4">
         <div class="flex gap-3 text-[10px] font-mono mb-2 items-center">
           <span style="color:var(--amber)">🍯${r.sweet}</span>
@@ -833,10 +827,7 @@ function openCourseModal(id){
           🚩 已被檢舉 ${r.reports.length} 次${r.reports.some(rep=>rep.reason) ? '：' + r.reports.filter(rep=>rep.reason).map(rep=>rep.reason).join('；') : ''}
         </div>` : ``}
         <div class="flex items-center flex-wrap gap-3 mt-3 pt-3 border-t border-[var(--line)]">
-          <button onclick="likeReview(${r.reviewId})" class="review-action text-xs font-mono text-[var(--muted)] hover:text-[var(--red)] flex items-center gap-1">
-            ❤️ <span>${r.likes || 0}</span>
-          </button>
-          <button onclick="reportReview(${r.reviewId}, ${c.id})" class="review-action text-xs font-mono text-[var(--muted)] hover:text-[var(--amber)] flex items-center gap-1">
+          <button onclick="reportReview(${r.reviewId}, ${c.id})" class="ml-auto review-action text-xs font-mono text-[var(--muted)] hover:text-[var(--amber)] flex items-center gap-1">
             🚩 檢舉
           </button>
           ${isAdminMode ? `
@@ -857,7 +848,6 @@ function openCourseModal(id){
 const GOOGLE_CLIENT_ID = "378596510854-louifc2cag698s3mt76lg8n8elgburpm.apps.googleusercontent.com";
 let currentIdToken = null;
 let pendingLoginPurpose = null;
-let pendingLikeReviewId = null;
 
 function initGoogleSignIn(){
   if(typeof google === 'undefined') return;
@@ -909,13 +899,6 @@ async function handleCredentialResponse(response){
     }
     if(currentOpenCourseId !== null && !document.getElementById('courseModal').classList.contains('hidden')){
       openCourseModal(currentOpenCourseId);
-    }
-  } else if(pendingLoginPurpose === 'like'){
-    closeModal('likeLoginModal');
-    const reviewId = pendingLikeReviewId;
-    pendingLikeReviewId = null;
-    if(reviewId !== null){
-      performLike(reviewId);
     }
   }
   pendingLoginPurpose = null;
@@ -1079,36 +1062,6 @@ async function reportReview(reviewId, courseId){
     showToast("🚩 已收到你的檢舉，感謝回報！");
   } else {
     alert("檢舉失敗，請稍後再試：" + (result.error || ""));
-  }
-}
-
-async function likeReview(reviewId){
-  if(!currentIdToken){
-    pendingLoginPurpose = 'like';
-    pendingLikeReviewId = reviewId;
-    showModal('likeLoginModal');
-    const container = document.getElementById('likeGoogleSignInButton');
-    container.innerHTML = "";
-    if(typeof google !== 'undefined'){
-      google.accounts.id.renderButton(container, { theme: "outline", size: "large", text: "signin_with" });
-    } else {
-      container.innerHTML = `<p class="text-xs text-[var(--red)] font-mono">Google 登入元件載入失敗，請確認網路連線</p>`;
-    }
-    return;
-  }
-  await performLike(reviewId);
-}
-
-async function performLike(reviewId){
-  const result = await postToSheet({ action:'likeReview', reviewId: reviewId, idToken: currentIdToken });
-  if(result.success){
-    await loadCoursesFromSheet();
-    if(currentOpenCourseId !== null){
-      openCourseModal(currentOpenCourseId);
-    }
-    showToast("❤️ 感謝你的按讚！");
-  } else {
-    alert(result.error || "按讚失敗，請稍後再試");
   }
 }
 
@@ -1562,7 +1515,7 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
 });
 
 // click backdrop to close
-['courseModal','reviewModal','addCourseModal','adminLoginModal','likeLoginModal','changelogModal','latestReviewsModal','reportedReviewsModal','feedbackModal','feedbackInboxModal','adminLogsModal'].forEach(id=>{
+['courseModal','reviewModal','addCourseModal','adminLoginModal','changelogModal','latestReviewsModal','reportedReviewsModal','feedbackModal','feedbackInboxModal','adminLogsModal'].forEach(id=>{
   document.getElementById(id).addEventListener('click', function(e){
     if(e.target === this) closeModal(id);
   });
