@@ -64,6 +64,10 @@
   .dropdown-menu{ animation:fadeIn .15s ease both; }
   .menu-item{ transition:background-color .12s ease; }
   header button{ white-space:nowrap; }
+  button{ -webkit-tap-highlight-color:transparent; }
+  button:focus{ outline:none; }
+  button:focus-visible{ outline:2px solid var(--mint); outline-offset:2px; }
+  .chip:active{ transform:scale(0.93); filter:brightness(0.96); }
   @media (max-width: 640px){
     #headerCredit{ display:none !important; }
   }
@@ -85,7 +89,7 @@
         </div>
       </div>
     </div>
-    <div class="flex items-center flex-wrap gap-2 justify-end">
+    <div class="flex items-center flex-wrap gap-2 justify-end w-full sm:w-auto">
       <button onclick="openFeedbackModal()" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--cyan)] hover:text-[var(--cyan)] flex items-center gap-1.5">
         💬 意見回饋
       </button>
@@ -1406,10 +1410,10 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
     currentFilter = btn.dataset.filter;
     document.querySelectorAll('.filter-btn').forEach(b=>{
       b.classList.remove('bg-[var(--mint)]','text-white','border-[var(--mint)]','font-semibold');
-      b.classList.add('border-[var(--line)]','text-[var(--muted)]');
+      b.classList.add('bg-[var(--surface)]','border-[var(--line)]','text-[var(--muted)]');
     });
+    btn.classList.remove('bg-[var(--surface)]','border-[var(--line)]','text-[var(--muted)]');
     btn.classList.add('bg-[var(--mint)]','text-white','border-[var(--mint)]','font-semibold');
-    btn.classList.remove('border-[var(--line)]','text-[var(--muted)]');
     renderCourses();
   });
 });
