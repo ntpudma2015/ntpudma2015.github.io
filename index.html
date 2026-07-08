@@ -182,8 +182,6 @@
 
     <div class="p-5 grid grid-cols-3 gap-3 border-b border-[var(--line)]" id="modalStats"></div>
 
-    <div id="modalExamLink" class="px-5 py-3 border-b border-[var(--line)]"></div>
-
     <div class="p-5 overflow-y-auto scrollbar-thin flex-1 space-y-3" id="modalReviews"></div>
   </div>
 </div>
@@ -334,10 +332,6 @@
         <label class="block text-xs font-mono text-[var(--muted)] mb-1.5">教授</label>
         <input id="newCourseTeacher" required type="text" placeholder="若多位教師請用 / 分隔，例如：廖凱弘/趙雪君" class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm placeholder:text-[var(--muted)]" />
       </div>
-      <div>
-        <label class="block text-xs font-mono text-[var(--muted)] mb-1.5">考古題連結（選填）</label>
-        <input id="newCourseExam" type="text" placeholder="https://..." class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm placeholder:text-[var(--muted)]" />
-      </div>
       <button type="submit" id="courseSubmitBtn" class="w-full font-display font-semibold bg-[var(--indigo)] text-white py-3 rounded-lg hover:brightness-110 active:scale-95 transition">新增課程</button>
     </form>
   </div>
@@ -376,6 +370,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxLA3GGZmqqhIU08Kj98G_p
 // ---------- 更新紀錄 ----------
 // 每次新增/調整功能時會自動在最上面補一筆，最新的版本永遠排在最前面
 const changelogEntries = [
+  { version: "v2.7", items: [
+    "移除考古題連結功能，簡化課程詳情頁與新增課程表單"
+  ]},
   { version: "v2.6", items: [
     "修正篩選標籤（必修/選修/通識）點擊後文字消失的顯示錯誤",
     "移除手機瀏覽器點擊按鈕時的黑色外框與閃爍效果，改為自訂按下去的動態回饋",
@@ -744,9 +741,7 @@ function openCourseModal(id){
     </div>
   `;
 
-  document.getElementById('modalExamLink').innerHTML = c.examLink
-    ? `<a href="${c.examLink}" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-mono text-[var(--indigo)] hover:underline">📎 前往考古題連結</a>`
-    : `<p class="text-xs font-mono text-[var(--muted)]">目前尚無考古題連結</p>`;
+
 
   const reviewsEl = document.getElementById('modalReviews');
   if(!hasData){
@@ -1334,7 +1329,6 @@ document.getElementById('addCourseForm').addEventListener('submit', async functi
   const type = document.getElementById('newCourseType').value;
   const name = document.getElementById('newCourseName').value.trim();
   const teacher = document.getElementById('newCourseTeacher').value.trim();
-  const examLink = document.getElementById('newCourseExam').value.trim();
 
   if(name === "" || teacher === ""){
     alert("請填寫課程名稱與教授姓名！");
@@ -1357,8 +1351,7 @@ document.getElementById('addCourseForm').addEventListener('submit', async functi
       action: 'addCourse',
       type: type,
       name: name,
-      teacher: teacher,
-      examLink: examLink
+      teacher: teacher
     });
 
     if(result.success){
