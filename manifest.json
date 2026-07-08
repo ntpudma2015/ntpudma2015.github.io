@@ -1,6 +1,6 @@
 {
   "name": "國立臺北大學數位行銷修課分享網",
-  "short_name": "修課分享網",
+  "short_name": "::選課網::",
   "description": "國立臺北大學數位行銷學系第十屆系學會製作，選課心得與課程資訊分享平台",
   "start_url": "./index.html",
   "scope": "./",
