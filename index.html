@@ -239,15 +239,7 @@
 
       <div>
         <label class="block text-xs font-mono text-[var(--muted)] mb-1.5">修課學期</label>
-        <select id="formSemester" required class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm">
-          <option value="" disabled selected>請選擇修課學期</option>
-          <option value="112上">112學年度上學期</option>
-          <option value="112下">112學年度下學期</option>
-          <option value="113上">113學年度上學期</option>
-          <option value="113下">113學年度下學期</option>
-          <option value="114上">114學年度上學期</option>
-          <option value="114下">114學年度下學期</option>
-        </select>
+        <select id="formSemester" required class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm"></select>
       </div>
 
       <div class="grid grid-cols-1 gap-4">
@@ -436,7 +428,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxLA3GGZmqqhIU08Kj98G_p
 // 每次新增/調整功能時會自動在最上面補一筆，最新的版本永遠排在最前面
 const changelogEntries = [
   { version: "v2.8", items: [
-    "撰寫心得新增「修課學期」欄位（112上 ～ 114下），心得卡片會顯示是哪個學期修的課"
+    "撰寫心得新增「修課學期」欄位，選項會依目前日期自動往前延伸，不侷限固定範圍"
   ]},
   { version: "v2.7", items: [
     "移除考古題連結功能，簡化課程詳情頁與新增課程表單"
@@ -1374,8 +1366,22 @@ document.getElementById('recommendYes').addEventListener('click', ()=> setRecomm
 document.getElementById('recommendNeutral').addEventListener('click', ()=> setRecommend('普通'));
 document.getElementById('recommendNo').addEventListener('click', ()=> setRecommend('不推薦'));
 
+// 動態產生修課學期選項：以西元年換算民國學年度（西元年 - 1911），
+// 自動往前推 5 個學年度、往後留 1 個學年度緩衝，每年都會自動延伸，不用手動改程式碼
+function populateSemesterSelect(){
+  const sel = document.getElementById('formSemester');
+  const nowROC = new Date().getFullYear() - 1911;
+  let options = `<option value="" disabled selected>請選擇修課學期</option>`;
+  for(let y = nowROC + 1; y >= nowROC - 5; y--){
+    options += `<option value="${y}上">${y}學年度上學期</option>`;
+    options += `<option value="${y}下">${y}學年度下學期</option>`;
+  }
+  sel.innerHTML = options;
+}
+
 function openReviewModal(){
   populateCourseSelect();
+  populateSemesterSelect();
   currentRating = { sweet:0, easy:0, gain:0 };
   currentRecommend = null;
   ['sweet','easy','gain'].forEach(key=>{
