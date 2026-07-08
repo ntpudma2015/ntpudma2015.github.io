@@ -237,6 +237,19 @@
         <select id="formCourse" required class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm"></select>
       </div>
 
+      <div>
+        <label class="block text-xs font-mono text-[var(--muted)] mb-1.5">修課學期</label>
+        <select id="formSemester" required class="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm">
+          <option value="" disabled selected>請選擇修課學期</option>
+          <option value="112上">112學年度上學期</option>
+          <option value="112下">112學年度下學期</option>
+          <option value="113上">113學年度上學期</option>
+          <option value="113下">113學年度下學期</option>
+          <option value="114上">114學年度上學期</option>
+          <option value="114下">114學年度下學期</option>
+        </select>
+      </div>
+
       <div class="grid grid-cols-1 gap-4">
         <div>
           <label class="block text-xs font-mono mb-1.5 flex justify-between"><span style="color:var(--amber)">🍯 甜度</span><span id="sweetLabel" class="text-[var(--muted)]">0/5</span></label>
@@ -422,6 +435,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxLA3GGZmqqhIU08Kj98G_p
 // ---------- 更新紀錄 ----------
 // 每次新增/調整功能時會自動在最上面補一筆，最新的版本永遠排在最前面
 const changelogEntries = [
+  { version: "v2.8", items: [
+    "撰寫心得新增「修課學期」欄位（112上 ～ 114下），心得卡片會顯示是哪個學期修的課"
+  ]},
   { version: "v2.7", items: [
     "移除考古題連結功能，簡化課程詳情頁與新增課程表單"
   ]},
@@ -808,6 +824,7 @@ function openCourseModal(id){
           <span style="color:var(--cyan)">🧊${r.easy}</span>
           <span style="color:var(--mint)">📈${r.gain}</span>
           <span style="color:${r.recommend==='推薦' ? 'var(--mint)' : r.recommend==='普通' ? 'var(--amber)' : 'var(--red)'}">${r.recommend==='推薦' ? '👍 推薦' : r.recommend==='普通' ? '😐 普通' : '👎 不推薦'}</span>
+          ${r.semester ? `<span style="color:var(--indigo)">📅 ${r.semester}</span>` : ``}
           <span class="ml-auto text-[var(--muted)]">${r.date}</span>
         </div>
         <p class="text-sm leading-relaxed text-[var(--text)]">${r.comment}</p>
@@ -1367,6 +1384,7 @@ function openReviewModal(){
   });
   setRecommend(null);
   document.getElementById('formComment').value = "";
+  document.getElementById('formSemester').value = "";
   showModal('reviewModal');
 }
 
@@ -1377,6 +1395,7 @@ document.getElementById('reviewForm').addEventListener('submit', async function(
   if(isSubmittingReview) return; // 防止連續點擊造成重複送出
 
   const courseId = parseInt(document.getElementById('formCourse').value);
+  const semester = document.getElementById('formSemester').value;
   const comment = document.getElementById('formComment').value.trim();
   if(currentRating.sweet===0 || currentRating.easy===0 || currentRating.gain===0){
     alert("請完成甜度／涼度／收穫度三項評分喔！");
@@ -1384,6 +1403,10 @@ document.getElementById('reviewForm').addEventListener('submit', async function(
   }
   if(currentRecommend === null){
     alert("請選擇是否推薦這門課給學弟妹！");
+    return;
+  }
+  if(semester === ""){
+    alert("請選擇修課學期喔！");
     return;
   }
 
@@ -1406,7 +1429,8 @@ document.getElementById('reviewForm').addEventListener('submit', async function(
       recommend: currentRecommend,
       comment: comment,
       date: dateStr,
-      ip: visitorIp
+      ip: visitorIp,
+      semester: semester
     });
 
     if(result.success){
