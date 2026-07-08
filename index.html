@@ -123,6 +123,18 @@
 </head>
 <body class="min-h-screen pb-24" style="padding-bottom: calc(6rem + env(safe-area-inset-bottom));">
 
+<!-- 加入主畫面提示橫幅：Android 顯示一鍵安裝按鈕，iOS 顯示手動教學（瀏覽器限制，無法做到全自動） -->
+<div id="installBanner" class="hidden fixed bottom-0 left-0 right-0 z-50 bg-[var(--surface)] border-t border-[var(--line)] shadow-[0_-8px_30px_-12px_rgba(28,35,51,0.3)] px-5" style="padding-top:0.875rem; padding-bottom: calc(0.875rem + env(safe-area-inset-bottom));">
+  <div class="max-w-6xl mx-auto flex items-center gap-3">
+    <img src="icon-192.png" alt="::選課網:: 圖示" class="w-10 h-10 rounded-xl shrink-0">
+    <div class="min-w-0 flex-1">
+      <p id="installBannerText" class="text-xs text-[var(--text)] leading-snug"></p>
+    </div>
+    <button id="installActionBtn" onclick="handleInstallAction()" class="hidden shrink-0 font-display font-semibold text-xs bg-[var(--mint)] text-white px-3.5 py-2 rounded-lg hover:brightness-110 active:scale-95 transition">安裝 App</button>
+    <button onclick="dismissInstallBanner()" class="shrink-0 text-[var(--muted)] hover:text-[var(--text)] text-xl leading-none px-1">&times;</button>
+  </div>
+</div>
+
 <div id="appWrapper" class="mx-auto transition-all duration-300">
 
 <!-- NAV -->
@@ -141,8 +153,8 @@
       <button onclick="openFeedbackModal()" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--cyan)] hover:text-[var(--cyan)] flex items-center gap-1.5">
         💬 意見回饋
       </button>
-      <button id="viewToggleBtn" onclick="toggleViewMode()" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)] flex items-center gap-1.5">
-        📱 手機預覽
+      <button onclick="openInstallGuideModal()" class="admin-btn font-mono text-xs px-3.5 py-2.5 rounded-lg border border-[var(--line)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)] flex items-center gap-1.5">
+        📲 加入主畫面
       </button>
 
       <div class="relative dropdown-wrapper">
@@ -150,6 +162,7 @@
           ⚙️
         </button>
         <div id="settingsMenu" class="dropdown-menu hidden w-52 bg-[var(--surface)] border border-[var(--line)] rounded-xl shadow-xl py-1.5 z-50">
+          <button id="viewToggleBtn" onclick="toggleViewMode(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">📱 手機預覽</button>
           <button onclick="openChangelogModal(); closeAllDropdowns();" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🗂️ 更新紀錄</button>
           <div class="my-1 border-t border-[var(--line)]"></div>
           <button id="adminToggleBtn" onclick="toggleAdminMode()" title="原型示範用，正式上線需改為後端驗證" class="menu-item w-full text-left px-4 py-2.5 text-sm font-mono text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--text)] flex items-center gap-2">🔒 管理模式</button>
@@ -368,6 +381,17 @@
   </div>
 </div>
 
+<!-- INSTALL GUIDE MODAL -->
+<div id="installGuideModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
+  <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-sm shadow-xl p-6 text-center">
+    <img src="icon-192.png" alt="::選課網:: 圖示" class="w-16 h-16 rounded-2xl mx-auto mb-3">
+    <h2 class="font-display font-bold text-lg text-[var(--text)] mb-1">加入主畫面</h2>
+    <p class="text-xs text-[var(--muted)] font-mono mb-5">把「::選課網::」加到手機桌面，開啟起來更像 App</p>
+    <div id="installGuideContent" class="text-left space-y-3"></div>
+    <button onclick="closeModal('installGuideModal')" class="mt-5 text-xs font-mono text-[var(--muted)] hover:text-[var(--text)]">關閉</button>
+  </div>
+</div>
+
 <!-- CHANGELOG MODAL -->
 <div id="changelogModal" class="fixed inset-0 z-40 hidden items-center justify-center p-4 modal-backdrop">
   <div class="fade-in bg-[var(--surface)] border border-[var(--line)] rounded-2xl w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col shadow-xl">
@@ -434,6 +458,12 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbxLA3GGZmqqhIU08Kj98G_p
 // ---------- 更新紀錄 ----------
 // 每次新增/調整功能時會自動在最上面補一筆，最新的版本永遠排在最前面
 const changelogEntries = [
+  { version: "v3.2", items: [
+    "⚙️ 選單新增「加入主畫面教學」，隨時可以查看圖文步驟，不用等提示橫幅跳出來"
+  ]},
+  { version: "v3.1", items: [
+    "重新加入「加入主畫面」引導提示：Android 顯示一鍵安裝按鈕，iPhone 顯示操作教學"
+  ]},
   { version: "v3.0", items: [
     "支援加入主畫面（PWA）：手機瀏覽器可以把網站加到主畫面，像 App 一樣有獨立圖示、全螢幕開啟"
   ]},
@@ -516,6 +546,41 @@ function renderChangelog(){
   `).join('<div class="border-t border-[var(--line)]"></div>');
 }
 
+function openInstallGuideModal(){
+  const contentEl = document.getElementById('installGuideContent');
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isAndroid = /Android/.test(ua);
+
+  if(isStandalone()){
+    contentEl.innerHTML = `<p class="text-sm text-[var(--mint)] font-mono text-center py-4">✅ 你現在就是用「已加入主畫面」的模式在瀏覽這個網站，不用再加一次！</p>`;
+  } else if(isIOS){
+    contentEl.innerHTML = installGuideStep('1', '點選瀏覽器下方（或右上角）的「分享」圖示 ⬆️') +
+      installGuideStep('2', '往下滑動選單，找到「加入主畫面」') +
+      installGuideStep('3', '點右上角「新增」，桌面就會出現水豚圖示囉！') +
+      `<p class="text-[10px] font-mono text-[var(--muted)] mt-3">＊只有用 Safari 瀏覽器打開才有這個選項，LINE／Instagram 內建瀏覽器打開通常沒有，請用「在瀏覽器中開啟」再操作</p>`;
+  } else if(isAndroid){
+    contentEl.innerHTML = installGuideStep('1', '點瀏覽器右上角「⋮」選單') +
+      installGuideStep('2', '選擇「安裝應用程式」或「加到主畫面」') +
+      installGuideStep('3', '確認安裝，桌面就會出現水豚圖示囉！') +
+      `<div class="mt-3 flex justify-center">
+        <button onclick="handleInstallAction()" class="font-display font-semibold text-xs bg-[var(--mint)] text-white px-4 py-2.5 rounded-lg hover:brightness-110 active:scale-95 transition">${deferredInstallPrompt ? '📲 一鍵安裝' : '重新整理後再試一次一鍵安裝'}</button>
+      </div>`;
+  } else {
+    contentEl.innerHTML = `<p class="text-sm text-[var(--muted)] font-mono text-center py-4">請用手機瀏覽器打開這個網站，才能加入主畫面喔！</p>`;
+  }
+
+  showModal('installGuideModal');
+}
+
+function installGuideStep(num, text){
+  return `
+    <div class="flex items-start gap-3">
+      <span class="shrink-0 w-6 h-6 rounded-full bg-[var(--mint-soft)] text-[var(--mint)] text-xs font-mono font-bold flex items-center justify-center">${num}</span>
+      <p class="text-sm text-[var(--text)] leading-relaxed pt-0.5">${text}</p>
+    </div>`;
+}
+
 function openChangelogModal(){
   renderChangelog();
   showModal('changelogModal');
@@ -534,6 +599,56 @@ async function getVisitorIp(){
 }
 
 // ---------- 加入主畫面（PWA 安裝）提示 ----------
+// ---------- 加入主畫面（PWA 安裝）提示 ----------
+let deferredInstallPrompt = null;
+
+function isStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+function initInstallBanner(){
+  if(isStandalone()) return; // 已經是加到主畫面開啟的狀態，不用再提示
+  if(localStorage.getItem('installBannerDismissed')) return; // 使用者之前已經關掉過，不再打擾
+
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isAndroid = /Android/.test(ua);
+
+  if(!isIOS && !isAndroid) return; // 桌機瀏覽器不需要顯示這個提示
+
+  const banner = document.getElementById('installBanner');
+  const textEl = document.getElementById('installBannerText');
+  const actionBtn = document.getElementById('installActionBtn');
+
+  if(isIOS){
+    textEl.innerHTML = `把「::選課網::」加到主畫面，開啟起來更像 App！<br><span class="text-[var(--muted)]">點下方分享圖示 <b>⬆️</b> → 往下滑找「加入主畫面」</span>`;
+    banner.classList.remove('hidden');
+  } else if(isAndroid){
+    textEl.textContent = '把「::選課網::」安裝到手機，開啟起來更像 App！';
+    // Android 要等瀏覽器真的準備好可以安裝（觸發 beforeinstallprompt）才顯示按鈕
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      actionBtn.classList.remove('hidden');
+      banner.classList.remove('hidden');
+    });
+  }
+}
+
+async function handleInstallAction(){
+  if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+  }
+  dismissInstallBanner();
+}
+
+function dismissInstallBanner(){
+  document.getElementById('installBanner').classList.add('hidden');
+  localStorage.setItem('installBannerDismissed', '1');
+}
+
 // ---------- 下拉選單控制 ----------
 function toggleDropdown(id, btnEl){
   const menu = document.getElementById(id);
@@ -1539,7 +1654,7 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
 });
 
 // click backdrop to close
-['courseModal','reviewModal','addCourseModal','adminLoginModal','changelogModal','latestReviewsModal','reportedReviewsModal','feedbackModal','feedbackInboxModal','adminLogsModal'].forEach(id=>{
+['courseModal','reviewModal','addCourseModal','adminLoginModal','changelogModal','latestReviewsModal','reportedReviewsModal','feedbackModal','feedbackInboxModal','adminLogsModal','installGuideModal'].forEach(id=>{
   document.getElementById(id).addEventListener('click', function(e){
     if(e.target === this) closeModal(id);
   });
@@ -1548,6 +1663,7 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
 // ---------- INIT ----------
 loadCoursesFromSheet();
 window.addEventListener('load', initGoogleSignIn);
+initInstallBanner();
 
 // 註冊 PWA 的 Service Worker（主要是讓 Android/Chrome 願意顯示「加入主畫面」的安裝提示；
 // iOS Safari 不需要這個也能加入主畫面，這裡加上是為了兩邊都照顧到）
