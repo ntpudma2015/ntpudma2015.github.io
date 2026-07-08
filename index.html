@@ -140,7 +140,7 @@
   <div class="flex gap-2 flex-wrap" id="filterTabs">
     <button data-filter="全部" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--mint)] bg-[var(--mint)] text-white font-semibold">全部</button>
     <button data-filter="必修" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)]">必修</button>
-    <button data-filter="選修" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--mint)] hover:text-[var(--mint)]">選修</button>
+    <button data-filter="選修" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--cyan)] hover:text-[var(--cyan)]">選修</button>
     <button data-filter="通識" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--amber)] hover:text-[var(--amber)]">通識</button>
   </div>
 </section>
@@ -384,23 +384,17 @@ const changelogEntries = [
   ]},
   { version: "v2.5", items: [
     "修正下拉選單在手機版會超出螢幕的排版錯誤，改用動態定位確保永遠顯示在畫面內",
-    "重新調整頁首優先順序：常用的「意見回饋」「手機預覽」改回直接可見，較少用的功能收進單一「⚙️」選單"
+    "重新調整頁首按鈕優先順序，手機與電腦版都更清爽"
   ]},
   { version: "v2.4", items: [
-    "整體版面優化：頁首按鈕從最多 9 顆整併為「⋯ 更多」「🛠️ 管理工具」兩個下拉選單，手機與電腦版都更清爽",
+    "整體版面優化：頁首按鈕整併為下拉選單，手機與電腦版都更清爽",
     "修正課程詳情視窗在手機窄螢幕上標題與按鈕擠壓的排版問題"
   ]},
-  { version: "v2.3", items: [
-    "管理員可在課程詳情視窗直接用下拉選單調整必選修別（必修/選修/通識），一般同學無法自行修改"
-  ]},
   { version: "v2.2", items: [
-    "新增「意見回饋」功能，同學可匿名回報 BUG 或提出功能建議，管理員登入後可在「意見信箱」查看與清除"
+    "新增「意見回饋」功能，同學可匿名回報 BUG 或提出功能建議"
   ]},
   { version: "v2.1", items: [
-    "新增心得檢舉功能，同學可匿名標記不當心得，管理員登入後可在「檢舉列表」統一查看並處理"
-  ]},
-  { version: "v2.0", items: [
-    "修正安全漏洞：任何 Google 帳號登入後都能看到管理模式，改為完全由後端白名單驗證結果決定是否顯示管理員介面"
+    "新增心得檢舉功能，同學可匿名標記不當心得"
   ]},
   { version: "v1.9", items: [
     "修正心得發文時間顯示異常，統一格式為「年/月/日 時:分」"
@@ -421,12 +415,6 @@ const changelogEntries = [
     "新增 ❤️ 按讚功能，需登入 Google 帳號才能按讚，防止重複洗讚",
     "推薦欄位從「推薦／不推薦」擴充為「推薦／普通／不推薦」三選一",
     "心得列表依讚數由高到低排序"
-  ]},
-  { version: "v1.3", items: [
-    "管理員模式改為 Google 帳號登入 + 後端白名單驗證",
-    "管理員可編輯／刪除不當心得",
-    "管理員可編輯課程名稱、授課教師",
-    "管理員可刪除整門課程（連帶清除底下所有心得）"
   ]},
   { version: "v1.2", items: [
     "匯入 114 學年度全系 29 門真實課程",
