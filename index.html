@@ -757,6 +757,8 @@ function openCourseModal(id){
           <span class="ml-auto text-[var(--muted)]">${r.date}</span>
         </div>
         <p class="text-sm leading-relaxed text-[var(--text)]">${r.comment}</p>
+        ${isAdminMode && r.hidden ? `
+        <div class="mt-2 text-[10px] font-mono text-[var(--amber)]">🙈 此則文字目前對一般同學是隱藏狀態</div>` : ``}
         ${isAdminMode && r.reports && r.reports.length > 0 ? `
         <div class="mt-2 text-[10px] font-mono text-[var(--red)]">
           🚩 已被檢舉 ${r.reports.length} 次${r.reports.some(rep=>rep.reason) ? '：' + r.reports.filter(rep=>rep.reason).map(rep=>rep.reason).join('；') : ''}
@@ -770,6 +772,7 @@ function openCourseModal(id){
           </button>
           ${isAdminMode ? `
           <span class="text-[10px] font-mono text-[var(--muted)]">IP: ${r.ip || '未知'}</span>
+          <button onclick="toggleReviewHidden(${c.id}, ${r.reviewId}, ${r.hidden ? 'true' : 'false'})" class="review-action text-xs font-mono ${r.hidden ? 'text-[var(--amber)]' : 'text-[var(--muted)]'}">${r.hidden ? '🙉 取消屏蔽' : '🙈 屏蔽文字'}</button>
           <button onclick="editReview(${c.id}, ${r.reviewId})" class="review-action text-xs font-mono text-[var(--indigo)]">✏️ 編輯</button>
           <button onclick="deleteReview(${c.id}, ${r.reviewId})" class="review-action text-xs font-mono text-[var(--red)]">🗑️ 刪除</button>` : ``}
         </div>
@@ -1041,12 +1044,14 @@ function renderReportedReviews(){
         <span class="text-[10px] font-mono text-[var(--red)] font-semibold">🚩 被檢舉 ${r.reports.length} 次</span>
       </div>
       <p class="text-sm leading-relaxed text-[var(--text)] mb-2">${r.comment}</p>
+      ${r.hidden ? `<p class="text-[10px] font-mono text-[var(--amber)] mb-2">🙈 此則文字目前對一般同學是隱藏狀態</p>` : ``}
       <div class="space-y-1 mb-2">
         ${r.reports.map(rep => `
           <p class="text-[10px] font-mono text-[var(--muted)]">・${rep.date}：${rep.reason ? rep.reason : '（未填寫原因）'}</p>
         `).join('')}
       </div>
       <div class="flex items-center flex-wrap gap-3 pt-3 border-t border-[var(--line)]">
+        <button onclick="toggleReviewHidden(${courseId}, ${r.reviewId}, ${r.hidden ? 'true' : 'false'})" class="review-action text-xs font-mono ${r.hidden ? 'text-[var(--amber)]' : 'text-[var(--muted)]'}">${r.hidden ? '🙉 取消屏蔽' : '🙈 屏蔽文字'}</button>
         <button onclick="editReview(${courseId}, ${r.reviewId})" class="review-action text-xs font-mono text-[var(--indigo)]">✏️ 編輯</button>
         <button onclick="deleteReview(${courseId}, ${r.reviewId})" class="review-action text-xs font-mono text-[var(--red)]">🗑️ 刪除</button>
       </div>
@@ -1132,6 +1137,23 @@ async function editCourseField(courseId, field, currentValue){
     showToast("✅ 課程資訊已更新");
   } else {
     alert("更新失敗，請稍後再試：" + (result.error || ""));
+  }
+}
+
+async function toggleReviewHidden(courseId, reviewId, currentHidden){
+  const newHidden = !currentHidden;
+  const confirmMsg = newHidden
+    ? "確定要屏蔽這則心得的文字內容嗎？評分與推薦仍會計入統計，只有文字對一般同學會被隱藏。"
+    : "確定要取消屏蔽，讓文字內容恢復公開顯示嗎？";
+  if(!confirm(confirmMsg)) return;
+
+  const result = await postToSheet({ action:'toggleReviewHidden', reviewId: reviewId, hidden: newHidden, idToken: currentIdToken });
+  if(result.success){
+    await loadCoursesFromSheet();
+    refreshOpenAdminViews(courseId);
+    showToast(newHidden ? "🙈 文字已屏蔽" : "🙉 已取消屏蔽");
+  } else {
+    alert("操作失敗，請稍後再試：" + (result.error || ""));
   }
 }
 
