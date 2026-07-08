@@ -11,7 +11,7 @@
 <!-- iOS Safari 專用的加入主畫面設定（Safari 不吃 manifest.json，要另外寫這幾行） -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="修課分享網">
+<meta name="apple-mobile-web-app-title" content="::選課網::">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 
@@ -533,6 +533,7 @@ async function getVisitorIp(){
   }
 }
 
+// ---------- 加入主畫面（PWA 安裝）提示 ----------
 // ---------- 下拉選單控制 ----------
 function toggleDropdown(id, btnEl){
   const menu = document.getElementById(id);
