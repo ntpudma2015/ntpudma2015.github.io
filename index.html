@@ -18,23 +18,23 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg: #F6F7FB;
+    --bg: #F5F5F7;
     --surface: #FFFFFF;
-    --surface-2: #F0F2F8;
-    --line: #E3E6F0;
-    --text: #1C2333;
-    --muted: #6B7280;
-    --mint: #0EA678;
-    --mint-soft: #E6F7F0;
-    --indigo: #4F46E5;
-    --indigo-soft: #EDECFC;
-    --amber: #D97B0A;
-    --cyan: #0891B2;
-    --red: #DC4C4C;
-    --red-soft: #FDECEC;
+    --surface-2: #E8E8ED;
+    --line: #E5E5EA;
+    --text: #1D1D1F;
+    --muted: #6E6E73;
+    --mint: #34C759;
+    --mint-soft: #E9F9EE;
+    --indigo: #007AFF;
+    --indigo-soft: #EAF2FF;
+    --amber: #FF9500;
+    --cyan: #32ADE6;
+    --red: #FF3B30;
+    --red-soft: #FFEDEC;
   }
 
   /* 管理員模式：深色主題，方便一眼辨識目前是不是在管理員身分下操作 */
@@ -73,19 +73,12 @@
     color:#0B0F1A;
     font-weight:600;
   }
-  *{ font-family:'Noto Sans TC','Space Grotesk',sans-serif; }
-  .font-display{ font-family:'Space Grotesk','Noto Sans TC',sans-serif; letter-spacing:-0.01em; }
+  *{ font-family:'Inter','Noto Sans TC',-apple-system,BlinkMacSystemFont,sans-serif; }
+  .font-display{ font-family:'Inter','Noto Sans TC',-apple-system,sans-serif; letter-spacing:-0.02em; }
   .font-mono{ font-family:'JetBrains Mono',monospace; }
-  body{ background-color:var(--bg); color:var(--text);
-    background-image:
-      radial-gradient(circle at 12% 0%, rgba(79,70,229,0.06), transparent 40%),
-      radial-gradient(circle at 88% 15%, rgba(14,166,120,0.07), transparent 35%),
-      linear-gradient(rgba(28,35,51,0.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(28,35,51,0.035) 1px, transparent 1px);
-    background-size:auto, auto, 28px 28px, 28px 28px;
-  }
-  .card{ background:var(--surface); border:1px solid var(--line); transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
-  .card:hover{ transform:translateY(-3px); border-color:rgba(14,166,120,0.5); box-shadow:0 10px 28px -14px rgba(28,35,51,0.22); }
+  body{ background-color:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
+  .card{ background:var(--surface); border:none; box-shadow:0 2px 16px rgba(0,0,0,0.06); transition:transform .4s cubic-bezier(.22,1,.36,1), box-shadow .4s cubic-bezier(.22,1,.36,1); transform-origin:center; }
+  .card:hover{ transform:translateY(-4px) scale(1.0102); box-shadow:0 24px 50px -20px rgba(0,0,0,0.2); z-index:10; position:relative; }
   .chip{ transition:all .15s ease; }
   .bar-track{ background:var(--surface-2); border-radius:999px; overflow:hidden; }
   .bar-fill{ height:100%; border-radius:999px; }
@@ -94,15 +87,15 @@
   .modal-backdrop{ background:rgba(20,24,38,0.45); backdrop-filter:blur(3px); }
   .scrollbar-thin::-webkit-scrollbar{ width:6px; }
   .scrollbar-thin::-webkit-scrollbar-thumb{ background:var(--line); border-radius:99px; }
-  ::selection{ background:rgba(14,166,120,0.25); }
-  .badge-required{ background:var(--indigo-soft); color:var(--indigo); border:1px solid rgba(79,70,229,0.25); }
-  .badge-elective{ background:var(--mint-soft); color:var(--mint); border:1px solid rgba(14,166,120,0.3); }
-  .badge-general{ background:rgba(217,123,10,0.12); color:var(--amber); border:1px solid rgba(217,123,10,0.3); }
+  ::selection{ background:rgba(0,122,255,0.18); }
+  .badge-required{ background:var(--indigo-soft); color:var(--indigo); }
+  .badge-elective{ background:var(--mint-soft); color:var(--mint); }
+  .badge-general{ background:#FFF3E2; color:var(--amber); }
   .fade-in{ animation:fadeIn .22s ease both; }
   @keyframes fadeIn{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
   .pulse-dot{ animation:pulse 1.6s ease-in-out infinite; }
   @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
-  input:focus, textarea:focus, select:focus{ outline:none; box-shadow:0 0 0 2px rgba(14,166,120,0.4); border-color:var(--mint) !important; }
+  input:focus, textarea:focus, select:focus{ outline:none; box-shadow:0 0 0 2px rgba(0,122,255,0.35); border-color:var(--indigo) !important; }
   .recommend-ring{ border-radius:50%; display:flex; align-items:center; justify-content:center; }
   .recommend-ring-inner{ background:var(--surface); border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .toggle-btn{ transition:all .15s ease; }
@@ -114,7 +107,7 @@
   header button{ white-space:nowrap; }
   button{ -webkit-tap-highlight-color:transparent; }
   button:focus{ outline:none; }
-  button:focus-visible{ outline:2px solid var(--mint); outline-offset:2px; }
+  button:focus-visible{ outline:2px solid var(--indigo); outline-offset:2px; }
   .chip:active{ transform:scale(0.93); filter:brightness(0.96); }
   @media (max-width: 640px){
     #headerCredit{ display:none !important; }
@@ -180,7 +173,7 @@
       <button onclick="openAddCourseModal()" class="shrink-0 font-display font-semibold text-sm border border-[var(--indigo)] text-[var(--indigo)] px-4 py-2.5 rounded-lg hover:bg-[var(--indigo-soft)] active:scale-95 transition">
         ＋ 新增課程
       </button>
-      <button onclick="openReviewModal()" class="shrink-0 font-display font-semibold text-sm bg-[var(--mint)] text-white px-4 py-2.5 rounded-lg hover:brightness-110 active:scale-95 transition flex items-center gap-2 shadow-sm shadow-[var(--mint)]/30">
+      <button onclick="openReviewModal()" class="shrink-0 font-display font-semibold text-sm bg-[var(--text)] text-white px-4 py-2.5 rounded-full hover:opacity-85 active:scale-95 transition flex items-center gap-2">
         <span class="pulse-dot inline-block w-1.5 h-1.5 rounded-full bg-white"></span>
         撰寫心得
       </button>
@@ -200,7 +193,7 @@
   </div>
 
   <div class="flex gap-2 flex-wrap" id="filterTabs">
-    <button data-filter="全部" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--mint)] bg-[var(--mint)] text-white font-semibold">全部</button>
+    <button data-filter="全部" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--text)] bg-[var(--text)] text-white font-semibold">全部</button>
     <button data-filter="必修" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--indigo)] hover:text-[var(--indigo)]">必修</button>
     <button data-filter="選修" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--cyan)] hover:text-[var(--cyan)]">選修</button>
     <button data-filter="通識" class="chip filter-btn font-mono text-xs px-4 py-2 rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--amber)] hover:text-[var(--amber)]">通識</button>
@@ -302,7 +295,7 @@
       </div>
 
       <p class="text-[10px] font-mono text-[var(--red)] leading-relaxed">💡 建議送出前先複製備份心得內容，送出後重新整理確認是否成功喔！</p>
-      <button type="submit" id="reviewSubmitBtn" class="w-full font-display font-semibold bg-[var(--mint)] text-white py-3 rounded-lg hover:brightness-110 active:scale-95 transition">送出心得</button>
+      <button type="submit" id="reviewSubmitBtn" class="w-full font-display font-semibold bg-[var(--text)] text-white py-3 rounded-full hover:opacity-85 active:scale-95 transition">送出心得</button>
     </form>
   </div>
 </div>
@@ -1650,11 +1643,11 @@ document.querySelectorAll('.filter-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     currentFilter = btn.dataset.filter;
     document.querySelectorAll('.filter-btn').forEach(b=>{
-      b.classList.remove('bg-[var(--mint)]','text-white','border-[var(--mint)]','font-semibold');
+      b.classList.remove('bg-[var(--text)]','text-white','border-[var(--text)]','font-semibold');
       b.classList.add('bg-[var(--surface)]','border-[var(--line)]','text-[var(--muted)]');
     });
     btn.classList.remove('bg-[var(--surface)]','border-[var(--line)]','text-[var(--muted)]');
-    btn.classList.add('bg-[var(--mint)]','text-white','border-[var(--mint)]','font-semibold');
+    btn.classList.add('bg-[var(--text)]','text-white','border-[var(--text)]','font-semibold');
     renderCourses();
   });
 });
